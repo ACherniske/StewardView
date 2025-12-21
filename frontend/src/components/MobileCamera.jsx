@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { processImageWithMetadata } from '../services/imageProcessor';
+import { processImageMetadata } from '../services/imageProcessor';
 import { uploadPhoto } from '../services/api';
 import '../styles/MobileCamera.css';
 
@@ -52,13 +52,13 @@ function MobileCamera() {
             onUploadStart();
 
             //process image with metadata
-            const ProcessedImage = await processImageWithMetadata(
+            const ProcessedImage = await processImageMetadata(
                 capturedImage,
                 trailName
             );
 
             //upload to backend
-            await uploadPhoto(processedImage, trailName, onUploadError);
+            await uploadPhoto(ProcessedImage, trailName, onUploadError);
 
             onUploadSuccess();
 
