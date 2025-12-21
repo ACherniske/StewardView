@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { processImageMetadata } from '../services/imageProcessor';
 import { uploadPhoto } from '../services/api';
+import { Camera } from 'lucide-react';
 import '../styles/MobileCamera.css';
 
 function MobileCamera() {
@@ -14,7 +15,7 @@ function MobileCamera() {
     };
 
     //handle image capture
-    const handleImageCapture = (e) => {
+    const handlePhotoCapture = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -78,13 +79,13 @@ function MobileCamera() {
     <div className="mobile-camera-container">
       {!capturedImage ? (
         <div className="camera-prompt">
-          <div className="camera-icon">📸</div>
+          <Camera size={36} color="#000" />
           <h3>Take a Photo</h3>
           <p className="camera-instructions">
             Tap the button below to open your camera and capture the trail view.
           </p>
           <button className="btn btn-camera" onClick={openCamera}>
-            <span className="camera-emoji">📷</span>
+            <Camera size={16} color="#ffffffff" />
             Open Camera
           </button>
           

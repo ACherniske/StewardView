@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { processImageMetadata } from '../services/imageProcessor';
 import { uploadPhoto } from '../services/api';
+import { Upload } from 'lucide-react';
 import '../styles/FileUpload.css';
 
 function FileUpload({ trailName, onUploadStart, onUploadSuccess, onUploadError }) {
@@ -109,7 +110,7 @@ function FileUpload({ trailName, onUploadStart, onUploadSuccess, onUploadError }
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
         >
-          <div className="upload-icon">📁</div>
+          <Upload size={36} color="#000" />
           <h3>Upload a Photo</h3>
           <p className="upload-instructions">
             Drag and drop an image here, or click to browse

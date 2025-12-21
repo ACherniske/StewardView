@@ -47,9 +47,11 @@
 }
 
 .modal-icon {
-  font-size: 4rem;
+  color: #4caf50;
   margin-bottom: 1rem;
   animation: scaleIn 0.4s ease;
+  display: flex;
+  justify-content: center;
 }
 
 @keyframes scaleIn {
@@ -61,6 +63,29 @@
   }
 }
 
+.spinner-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retry-icon {
+  animation: rotate 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+}
+
 .modal-message {
   margin-bottom: 1.5rem;
 }
@@ -68,29 +93,61 @@
 .modal-title {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
-  color: #2d3748;
+  color: #2e7d32;
 }
 
 .modal-text {
   margin: 0;
-  color: #4a5568;
+  color: #558b2f;
   line-height: 1.6;
 }
 
 .status-uploading {
-  border-top: 4px solid #3182ce;
+  border-top: 4px solid #66bb6a;
+}
+
+.status-uploading .modal-icon {
+  color: #66bb6a;
 }
 
 .status-success {
-  border-top: 4px solid #38a169;
+  border-top: 4px solid #4caf50;
+}
+
+.status-success .modal-icon {
+  color: #4caf50;
 }
 
 .status-error {
-  border-top: 4px solid #e53e3e;
+  border-top: 4px solid #f44336;
+}
+
+.status-error .modal-icon {
+  color: #f44336;
+}
+
+.status-error .modal-title {
+  color: #d32f2f;
+}
+
+.status-error .modal-text {
+  color: #c62828;
 }
 
 .status-retrying {
-  border-top: 4px solid #f6ad55;
+  border-top: 4px solid #ff9800;
+}
+
+.status-retrying .modal-icon {
+  color: #ff9800;
+}
+
+.status-retrying .modal-title {
+  color: #f57c00;
+}
+
+.status-retrying .modal-text {
+  color: #ef6c00;
 }
 
 .retry-progress {
@@ -100,7 +157,7 @@
 .retry-bar {
   width: 100%;
   height: 8px;
-  background: #e2e8f0;
+  background: #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 0.5rem;
@@ -108,7 +165,7 @@
 
 .retry-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f6ad55, #ed8936);
+  background: linear-gradient(90deg, #ff9800, #f57c00);
   transition: width 0.3s ease;
   animation: shimmer 2s infinite;
 }
@@ -127,35 +184,15 @@
 
 .retry-text {
   margin: 0;
-  color: #718096;
+  color: #757575;
   font-size: 0.9rem;
   font-weight: 500;
-}
-
-.loading-spinner {
-  margin-bottom: 1.5rem;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto;
-  border: 4px solid #e2e8f0;
-  border-top-color: #3182ce;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .btn-modal {
   width: 100%;
   padding: 0.75rem;
-  background: #667eea;
+  background: #4caf50;
   color: white;
   border: none;
   border-radius: 8px;
@@ -166,9 +203,9 @@
 }
 
 .btn-modal:hover {
-  background: #5568d3;
+  background: #388e3c;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
 }
 
 .btn-modal:active {
@@ -181,8 +218,9 @@
     padding: 1.5rem;
   }
 
-  .modal-icon {
-    font-size: 3rem;
+  .modal-icon svg {
+    width: 48px;
+    height: 48px;
   }
 
   .modal-title {
