@@ -5,8 +5,9 @@ function PlantBackground() {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
 
-  // Store plant parameters for consistent randomness
+  // Store plant parameters
   const plantParamsRef = useRef([]);
+
   // Store per-plant runtime state
   const plantStatesRef = useRef([]);
 
@@ -16,27 +17,57 @@ function PlantBackground() {
 
     const ctx = canvas.getContext('2d');
 
-    // Set canvas size and regenerate plant params (account for DPR)
-    const numPlants = 5;
+    // Set canvas size and regenerate plant params
+
+    //if on mobile device, reduce number of plants
+    const numPlants = window.innerWidth < 768 ? 5 : 10;
+
     const resizeCanvas = () => {
       const dpr = window.devicePixelRatio || 1;
+
       // CSS size
       const cssWidth = window.innerWidth;
       const cssHeight = window.innerHeight;
       canvas.style.width = cssWidth + 'px';
       canvas.style.height = cssHeight + 'px';
+
       // Backing store size for crisp rendering
       canvas.width = Math.floor(cssWidth * dpr);
       canvas.height = Math.floor(cssHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       // Generate random params for each plant (positions in CSS pixels)
-      plantParamsRef.current = Array.from({ length: numPlants }, () => ({
-        x: Math.random() * (cssWidth * 0.8) + cssWidth * 0.1,
-        maxGeneration: Math.floor(Math.random() * 2) + 5, // 5 or 6
-        angle: Math.random() * 10 + 18, // 18-28 deg, dainty
-        len: Math.random() * 2 + 3 // 3-5 px, thin
-      }));
+      // Plants are more likely to be near the edges, and middle plants are shorter
+      plantParamsRef.current = Array.from({ length: numPlants }, () => {
+        // Generate a random value biased toward 0 or 1 (edges) using a bimodal distribution
+        // The closer to 0.5, the less likely
+        let edgeBias = Math.random();
+        edgeBias = edgeBias < 0.5 ? edgeBias : 1 - edgeBias; // 0 to 0.5, higher near 0
+        // Sharpen the bias for more edge clustering
+        let edgeFactor = Math.pow(edgeBias * 2, 2); // 0 (center) to 1 (edge)
+        // Randomly choose left or right edge
+        let side = Math.random() < 0.5 ? 0 : 1;
+        // Calculate x position: cluster near 10% or 90% of width
+        let x;
+        if (side === 0) {
+          // Left edge: 10% to 40% of width
+          x = cssWidth * (0.1 + 0.3 * edgeFactor * Math.random());
+        } else {
+          // Right edge: 60% to 90% of width
+          x = cssWidth * (0.9 - 0.3 * edgeFactor * Math.random());
+        }
+        // Calculate a normalized distance from center (0=center, 1=edge)
+        let distFromCenter = Math.abs((x / cssWidth) - 0.5) * 2;
+        // Make middle plants shorter by reducing maxGeneration and len
+        let maxGeneration = Math.floor(Math.random() * 2) + 5 - Math.floor(2 * (1 - distFromCenter));
+        let len = (Math.random() * 2 + 3) * (0.7 + 0.6 * distFromCenter); // 70%-130% length
+        return {
+          x,
+          maxGeneration,
+          angle: Math.random() * 10 + 18, // 18-28 deg, dainty
+          len
+        };
+      });
 
       // Reset plant states so growth runs again on resize
       plantStatesRef.current = plantParamsRef.current.map(() => ({
@@ -49,21 +80,21 @@ function PlantBackground() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // L-System rules
+    // Random L System by BarneyCodes
     const rules = {
       X: [
-        { rule: "(F[+X][-X]FX)", prob: 0.5 },
-        { rule: "(F[-X]FX)", prob: 0.05 },
-        { rule: "(F[+X]FX)", prob: 0.05 },
-        { rule: "(F[++X][-X]FX)", prob: 0.1 },
-        { rule: "(F[+X][--X]FX)", prob: 0.1 },
-        { rule: "(F[+X][-X]FXA)", prob: 0.1 },
-        { rule: "(F[+X][-X]FXB)", prob: 0.1 }
+        { rule: "(F[+X][-X]FX)", prob: 0.5 }, // main rule
+        { rule: "(F[-X]FX)", prob: 0.05 }, // left only
+        { rule: "(F[+X]FX)", prob: 0.05 }, // right only
+        { rule: "(F[++X][-X]FX)", prob: 0.1 }, // wider right
+        { rule: "(F[+X][--X]FX)", prob: 0.1 }, // wider left
+        { rule: "(F[+X][-X]FXA)", prob: 0.1 }, // flower
+        { rule: "(F[+X][-X]FXB)", prob: 0.1 } // different flower
       ],
       F: [
-        { rule: "F(F)", prob: 0.85 },
-        { rule: "F(FF)", prob: 0.05 },
-        { rule: "F", prob: 0.1 }
+        { rule: "F(F)", prob: 0.85 }, // grow
+        { rule: "F(FF)", prob: 0.05 }, // faster grow
+        { rule: "F", prob: 0.1 } // normal
       ],
       "(": "",
       ")": ""
@@ -108,21 +139,9 @@ function PlantBackground() {
       return "";
     }
 
-    function nextGeneration() {
-      if (growthPercent < 1) return;
-
-      if (currGeneration === maxGeneration) {
-        currGeneration = 0;
-        word = "X";
-      }
-
-      word = generate(word);
-      currGeneration++;
-      growthPercent = 0;
-    }
+    const scaleFactor = 1.2; // adjust overall size
 
     // Drawing function with lerp
-
     function drawLsysLerp(x, y, state, t, len, ang) {
       t = Math.max(0, Math.min(1, t));
       let lerpOn = false;
@@ -135,21 +154,21 @@ function PlantBackground() {
         let lerpT = lerpOn ? t : 1;
         if (c === "A") {
           ctx.save();
-          ctx.fillStyle = "rgba(139, 195, 74, 0.6)";
+          ctx.fillStyle = "#E5CEDC";
           ctx.beginPath();
-          ctx.arc(0, 0, len * 2 * lerpT, 0, Math.PI * 2);
+          ctx.arc(0, 0, len * lerpT * scaleFactor, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         } else if (c === "B") {
           ctx.save();
-          ctx.fillStyle = "rgba(255, 183, 77, 0.6)";
+          ctx.fillStyle = "#FCA17D";
           ctx.beginPath();
-          ctx.arc(0, 0, len * 2 * lerpT, 0, Math.PI * 2);
+          ctx.arc(0, 0, len * lerpT * scaleFactor, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         } else if (c === "F") {
           ctx.save();
-          ctx.strokeStyle = "#4caf50";
+          ctx.strokeStyle = "#9ea93f";
           ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.moveTo(0, 0);
