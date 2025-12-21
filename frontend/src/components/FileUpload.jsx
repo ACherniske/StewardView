@@ -101,32 +101,47 @@ function FileUpload({ trailName, onUploadStart, onUploadSuccess, onUploadError }
     };
 
   return (
-    <div className="file-upload-container">
+    <div className="file-upload-card">
+      <h2 className="file-upload-title">File Upload</h2>
+      <div className="file-upload-divider" />
       {!selectedFile ? (
-        <div
-          className={`upload-area ${isDragging ? 'dragging' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Upload size={36} color="#000" />
-          <h3>Upload a Photo</h3>
-          <p className="upload-instructions">
-            Drag and drop an image here, or click to browse
-          </p>
-          <p className="upload-requirements">
-            Accepted formats: JPEG, PNG, WebP<br />
-            Max size: 10MB
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleInputChange}
-            style={{ display: 'none' }}
-          />
-        </div>
+        <>
+          <div
+            className={`upload-area ${isDragging ? 'dragging' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="upload-icon-box">
+              <Upload size={40} color="#7bb661" />
+            </div>
+            <div className="upload-area-text">
+              <span className="upload-area-main">Drag files to upload</span>
+              <span className="upload-area-or">or</span>
+            </div>
+            <button
+              className="choose-file-btn"
+              type="button"
+              onClick={e => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+            >
+              Choose File
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleInputChange}
+              style={{ display: 'none' }}
+            />
+            <div className="upload-requirements">
+              Accepted: JPEG, PNG, WebP &nbsp;|&nbsp; Max: 10MB
+            </div>
+          </div>
+        </>
       ) : (
         <div className="file-preview">
           <div className="preview-container">
@@ -136,14 +151,12 @@ function FileUpload({ trailName, onUploadStart, onUploadSuccess, onUploadError }
               className="preview-image"
             />
           </div>
-
           <div className="file-info">
             <p className="file-name">{selectedFile.name}</p>
             <p className="file-size">
               {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
             </p>
           </div>
-
           <div className="preview-controls">
             <button className="btn btn-secondary" onClick={clearSelection}>
               Remove
