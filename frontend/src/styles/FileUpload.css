@@ -1,0 +1,144 @@
+.file-upload-container {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.upload-area {
+  width: 100%;
+  max-width: 500px;
+  padding: 3rem 2rem;
+  border: 3px dashed #cbd5e0;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f7fafc;
+}
+
+.upload-area:hover {
+  border-color: #667eea;
+  background: #edf2f7;
+  transform: translateY(-2px);
+}
+
+.upload-area.dragging {
+  border-color: #667eea;
+  background: #e6efff;
+  transform: scale(1.02);
+}
+
+.upload-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.upload-area h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+  font-size: 1.5rem;
+}
+
+.upload-instructions {
+  color: #4a5568;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.upload-requirements {
+  color: #a0aec0;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  line-height: 1.6;
+}
+
+.file-preview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.preview-container {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: #000;
+}
+
+.preview-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.file-info {
+  text-align: center;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.file-name {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #2d3748;
+  word-break: break-word;
+}
+
+.file-size {
+  margin: 0;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.preview-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.preview-controls .btn {
+  flex: 1;
+  max-width: 200px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .file-upload-container {
+    padding: 1rem;
+  }
+
+  .upload-area {
+    padding: 2rem 1rem;
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+  }
+
+  .upload-area h3 {
+    font-size: 1.25rem;
+  }
+
+  .upload-instructions {
+    font-size: 0.95rem;
+  }
+
+  .preview-controls .btn {
+    font-size: 0.95rem;
+    padding: 0.65rem 1rem;
+  }
+}
