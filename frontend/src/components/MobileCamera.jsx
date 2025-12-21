@@ -4,7 +4,7 @@ import { uploadPhoto } from '../services/api';
 import { Camera } from 'lucide-react';
 import '../styles/MobileCamera.css';
 
-function MobileCamera() {
+function MobileCamera({ trailName, onUploadStart, onUploadSuccess, onUploadError }) {
     const [capturedImage, setCapturedImage] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const fileInputRef = useRef(null);
@@ -76,19 +76,22 @@ function MobileCamera() {
     };
 
   return (
-    <div className="mobile-camera-container">
+    <div className="mobile-camera-card">
+      <h2 className="mobile-camera-title">Take a Photo</h2>
+      <div className="mobile-camera-divider" />
       {!capturedImage ? (
         <div className="camera-prompt">
-          <Camera size={36} color="#000" />
-          <h3>Take a Photo</h3>
-          <p className="camera-instructions">
-            Tap the button below to open your camera and capture the trail view.
-          </p>
-          <button className="btn btn-camera" onClick={openCamera}>
-            <Camera size={16} color="#ffffffff" />
+          <div className="mobile-camera-icon-box">
+            <Camera size={40} color="#7bb661" />
+          </div>
+          <div className="mobile-camera-area-text">
+            <span className="mobile-camera-area-main">Tap below to open your camera</span>
+            <span className="mobile-camera-area-or">and capture the trail view</span>
+          </div>
+          <button className="mobile-camera-choose-btn" onClick={openCamera}>
+            <Camera size={16} color="#fff" />
             Open Camera
           </button>
-          
           {/* Hidden file input that triggers native camera */}
           <input
             ref={fileInputRef}
@@ -100,27 +103,25 @@ function MobileCamera() {
           />
         </div>
       ) : (
-        <div className="photo-preview">
-          <div className="preview-container">
+        <div className="mobile-camera-preview">
+          <div className="mobile-camera-preview-container">
             <img
               src={previewUrl}
               alt="Captured trail"
-              className="preview-image"
+              className="mobile-camera-preview-image"
             />
           </div>
-
-          <div className="photo-info">
-            <p className="photo-name">{capturedImage.name}</p>
-            <p className="photo-size">
+          <div className="mobile-camera-file-info">
+            <p className="mobile-camera-file-name">{capturedImage.name}</p>
+            <p className="mobile-camera-file-size">
               {(capturedImage.size / 1024 / 1024).toFixed(2)} MB
             </p>
           </div>
-
-          <div className="preview-controls">
-            <button className="btn btn-secondary" onClick={retakePhoto}>
+          <div className="mobile-camera-preview-controls">
+            <button className="mobile-camera-btn mobile-camera-btn-secondary" onClick={retakeImage}>
               Retake
             </button>
-            <button className="btn btn-primary" onClick={submitPhoto}>
+            <button className="mobile-camera-btn mobile-camera-btn-primary" onClick={submitPhoto}>
               Submit Photo
             </button>
           </div>
