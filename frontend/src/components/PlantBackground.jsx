@@ -220,8 +220,8 @@ function PlantBackground() {
         }
         drawLsysLerp(
           param.x,
-          // convert CSS pixels for vertical placement
-          (canvas.height / (window.devicePixelRatio || 1)) - 20,
+          // Place base of plant at the very bottom of the canvas
+          (canvas.height / (window.devicePixelRatio || 1)),
           state.word,
           state.growthPercent,
           param.len,
