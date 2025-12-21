@@ -7,6 +7,8 @@ function PlantBackground() {
 
   // Store plant parameters for consistent randomness
   const plantParamsRef = useRef([]);
+  // Store per-plant runtime state
+  const plantStatesRef = useRef([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -14,17 +16,34 @@ function PlantBackground() {
 
     const ctx = canvas.getContext('2d');
 
-    // Set canvas size and regenerate plant params
+    // Set canvas size and regenerate plant params (account for DPR)
     const numPlants = 5;
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      // Generate random params for each plant
+      const dpr = window.devicePixelRatio || 1;
+      // CSS size
+      const cssWidth = window.innerWidth;
+      const cssHeight = window.innerHeight;
+      canvas.style.width = cssWidth + 'px';
+      canvas.style.height = cssHeight + 'px';
+      // Backing store size for crisp rendering
+      canvas.width = Math.floor(cssWidth * dpr);
+      canvas.height = Math.floor(cssHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Generate random params for each plant (positions in CSS pixels)
       plantParamsRef.current = Array.from({ length: numPlants }, () => ({
-        x: Math.random() * (canvas.width * 0.8) + canvas.width * 0.1,
+        x: Math.random() * (cssWidth * 0.8) + cssWidth * 0.1,
         maxGeneration: Math.floor(Math.random() * 2) + 5, // 5 or 6
         angle: Math.random() * 10 + 18, // 18-28 deg, dainty
         len: Math.random() * 2 + 3 // 3-5 px, thin
+      }));
+
+      // Reset plant states so growth runs again on resize
+      plantStatesRef.current = plantParamsRef.current.map(() => ({
+        word: 'X',
+        currGeneration: 0,
+        growthPercent: 0,
+        done: false
       }));
     };
     resizeCanvas();
@@ -153,19 +172,21 @@ function PlantBackground() {
     }
 
 
-    // Per-plant state
-    let plantStates = plantParamsRef.current.map(param => ({
-      word: "X",
-      currGeneration: 0,
-      growthPercent: 0,
-      done: false
-    }));
+    // plantStatesRef initialized in resizeCanvas; ensure non-empty
+    if (!plantStatesRef.current || !plantStatesRef.current.length) {
+      plantStatesRef.current = plantParamsRef.current.map(() => ({
+        word: 'X',
+        currGeneration: 0,
+        growthPercent: 0,
+        done: false
+      }));
+    }
 
     // Animation loop: grow each plant once, animate only growth
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       plantParamsRef.current.forEach((param, i) => {
-        let state = plantStates[i];
+        let state = plantStatesRef.current[i];
         if (!state.done) {
           if (state.growthPercent < 1) {
             state.growthPercent += 0.025;
@@ -180,7 +201,8 @@ function PlantBackground() {
         }
         drawLsysLerp(
           param.x,
-          canvas.height - 20,
+          // convert CSS pixels for vertical placement
+          (canvas.height / (window.devicePixelRatio || 1)) - 20,
           state.word,
           state.growthPercent,
           param.len,
