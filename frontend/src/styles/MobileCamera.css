@@ -1,0 +1,173 @@
+.mobile-camera-container {
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.camera-prompt {
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.camera-icon {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.camera-prompt h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+  font-size: 1.75rem;
+}
+
+.camera-instructions {
+  color: #718096;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.btn-camera {
+  width: 100%;
+  max-width: 300px;
+  padding: 1.25rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.btn-camera:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.btn-camera:active {
+  transform: translateY(0);
+}
+
+.camera-emoji {
+  font-size: 1.5rem;
+}
+
+.photo-preview {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.preview-container {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #000;
+}
+
+.preview-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.photo-info {
+  text-align: center;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.photo-name {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #2d3748;
+  word-break: break-word;
+  font-size: 0.95rem;
+}
+
+.photo-size {
+  margin: 0;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.preview-controls {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.preview-controls .btn {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.05rem;
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) {
+  .mobile-camera-container {
+    padding: 2rem;
+  }
+
+  .camera-icon {
+    font-size: 6rem;
+  }
+
+  .camera-prompt h3 {
+    font-size: 2rem;
+  }
+
+  .camera-instructions {
+    font-size: 1.1rem;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 400px) {
+  .mobile-camera-container {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .camera-icon {
+    font-size: 4rem;
+  }
+
+  .camera-prompt h3 {
+    font-size: 1.5rem;
+  }
+
+  .btn-camera {
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .preview-controls .btn {
+    font-size: 0.95rem;
+    padding: 0.85rem;
+  }
+}
