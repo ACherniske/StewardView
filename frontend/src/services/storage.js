@@ -5,7 +5,7 @@ const DB_VERSION = 1;
 const UPLOAD_STORE = 'uploads';
 
 //upload status constants
-export const UPLOAD_STATUS = {
+export const UploadStatus = {
     PENDING: 'pending',
     UPLOADING: 'uploading',
     SUCCESS: 'success',
