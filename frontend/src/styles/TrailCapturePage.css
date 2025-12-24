@@ -1,26 +1,48 @@
 /* Footer Bar */
 .footer-bar {
     width: 100vw;
-    background: #d2eac2;
-    color: #3a5a40;
+    background: #6da557;
+    color: #f3fbe3;
     text-align: center;
-    padding: 1rem 0;
+    padding: 0.35rem 0 0.25rem 0;
     position: fixed;
     left: 0;
     bottom: 0;
     z-index: 10;
-    font-size: 1rem;
+    font-size: 0.95rem;
     box-shadow: 0 -2px 8px rgba(60, 100, 60, 0.08);
 }
 
+.footer-grass {
+        width: 100%;
+        height: 38px;
+        position: fixed;
+        left: 0;
+        bottom: 30px;
+        z-index: 11;
+        margin: 0;
+        pointer-events: none;
+        background-image:
+            url('data:image/svg+xml;utf8,<svg width="100" height="38" viewBox="0 0 100 38" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="38" fill="none"/><g><path d="M0,38 Q5,10 10,38 Q15,20 20,38 Q25,7 30,38 Q35,25 40,38 Q45,15 50,38 Q55,7 60,38 Q65,25 70,38 Q75,20 80,38 Q85,7 90,38 Q95,25 100,38 V38 H0 Z" fill="%236da557"/></g></svg>');
+        background-repeat: repeat-x;
+        background-position: top left;
+        background-size: 100px 38px;
+}
+
 .footer-content {
-    max-width: 900px;
+    width: 100%;
     margin: 0 auto;
     padding: 0 1rem;
+}
+
+.footer-content a {
+    color: #f3fbe3;
+    text-decoration: underline;
 }
 /* Main page styling */
 html, body {
     background: #e3fadf !important;
+        margin: 0;
     min-height: 100vh;
     width: 100%;
     margin: 0;

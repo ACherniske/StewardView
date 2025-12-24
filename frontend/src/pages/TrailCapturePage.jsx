@@ -136,11 +136,12 @@ function TrailCapturePage() {
         onClose={handleModalClose}
       />
 
+      {/* Footer Grass Border */}
+      <div className="footer-grass"></div>
       {/* Footer Bar */}
       <footer className="footer-bar">
         <div className="footer-content">
-          StewardView &bull; <span>Developed by Aiden Cherniske</span> &bull; <span>2025</span><br />
-          <span>For support: <a href="mailto:stewardview@example.com">apcherniske@gmail.com</a></span>
+          StewardView &bull; Developed by Aiden Cherniske &bull; 2025 &bull; For support: <a href="mailto:apcherniske@gmail.com">apcherniske@gmail.com</a>
         </div>
       </footer>
     </div>
