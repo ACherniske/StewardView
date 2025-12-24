@@ -4,7 +4,7 @@ import { uploadPhoto } from '../services/api';
 import { Camera } from 'lucide-react';
 import '../styles/MobileCamera.css';
 
-function MobileCamera({ trailName, onUploadStart, onUploadSuccess, onUploadError }) {
+function MobileCamera({ orgName, trailName, onUploadStart, onUploadSuccess, onUploadError }) {
     const [capturedImage, setCapturedImage] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const fileInputRef = useRef(null);
@@ -58,8 +58,17 @@ function MobileCamera({ trailName, onUploadStart, onUploadSuccess, onUploadError
                 trailName
             );
 
-            //upload to backend
-            await uploadPhoto(ProcessedImage, trailName, onUploadError);
+            //upload to backend with correct parameter order
+            // uploadPhoto(processedImage, orgName, trailName, onRetry)
+            await uploadPhoto(
+                ProcessedImage, 
+                orgName,        // Organization name
+                trailName,      // Trail name
+                (errorMsg, retryCount) => {  // onRetry callback
+                    console.log(`Retry attempt ${retryCount}: ${errorMsg}`);
+                    // You can add UI feedback here if needed
+                }
+            );
 
             onUploadSuccess();
 
