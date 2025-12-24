@@ -21,28 +21,41 @@ class StorageService {
     async init() {
         if (this.db) return;
 
-        this.db = await openDB(DB_NAME, DB_VERSION, {
-            upgrade(db) {
-                //create uploads store if it doesnt exist
-                if (!db.objectStoreNames.contains(UPLOAD_STORE)) {
-                    const store = db.createObjectStore(UPLOAD_STORE, {
-                        keyPath: 'id',
-                    });
+        try {
+            this.db = await openDB(DB_NAME, DB_VERSION, {
+                upgrade(db, oldVersion, newVersion, transaction) {
+                    //create uploads store if it doesnt exist
+                    if (!db.objectStoreNames.contains(UPLOAD_STORE)) {
+                        const store = db.createObjectStore(UPLOAD_STORE, {
+                            keyPath: 'id',
+                        });
 
-                    //create indexes for querying
-                    uploadStore.createIndex('by-status', 'status');
-                    uploadStore.createIndex('by-date', 'createdAt');
+                        //create indexes for querying
+                        store.createIndex('by-status', 'status');
+                        store.createIndex('by-date', 'createdAt');
+                    }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Failed to initialize database:', error);
+            throw error;
+        }
     }
 
-    //add upload queue
+    //add upload to queue
     async addUpload(upload) {
         await this.init();
         if (!this.db) throw new Error('Database not initialized');
 
         await this.db.add(UPLOAD_STORE, upload);
+    }
+
+    //get upload by id
+    async getUpload(id) {
+        await this.init();
+        if (!this.db) throw new Error('Database not initialized');
+
+        return await this.db.get(UPLOAD_STORE, id);
     }
 
     //get all uploads
@@ -66,8 +79,8 @@ class StorageService {
         await this.init();
         if (!this.db) throw new Error('Database not initialized');
 
-        const pending = await this.db.getAllFromIndex(UPLOAD_STORE, 'by-status', UPLOAD_STATUS.PENDING);
-        const failed = await this.db.getAllFromIndex(UPLOAD_STORE, 'by-status', UPLOAD_STATUS.FAILED);
+        const pending = await this.db.getAllFromIndex(UPLOAD_STORE, 'by-status', UploadStatus.PENDING);
+        const failed = await this.db.getAllFromIndex(UPLOAD_STORE, 'by-status', UploadStatus.FAILED);
         return [...pending, ...failed];
     }
 
@@ -91,12 +104,12 @@ class StorageService {
         await this.db.delete(UPLOAD_STORE, id);
     }
 
-    //cleanup
+    //cleanup successful uploads
     async clearSuccessfulUploads() {
         await this.init();
         if (!this.db) throw new Error('Database not initialized');
 
-        const successful = await this.db.getAllFromIndex(UPLOAD_STORE, 'by-status', UPLOAD_STATUS.SUCCESS);
+        const successful = await this.db.getAllFromIndex(UPLOAD_STORE, 'by-status', UploadStatus.SUCCESS);
 
         const tx = this.db.transaction(UPLOAD_STORE, 'readwrite');
         await Promise.all([
@@ -115,6 +128,16 @@ class StorageService {
         }
 
         return await this.db.count(UPLOAD_STORE);
+    }
+
+    //clear all data (for debugging/reset)
+    async clearAll() {
+        await this.init();
+        if (!this.db) throw new Error('Database not initialized');
+
+        const tx = this.db.transaction(UPLOAD_STORE, 'readwrite');
+        await tx.store.clear();
+        await tx.done;
     }
 }
 
