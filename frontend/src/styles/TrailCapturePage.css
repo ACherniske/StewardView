@@ -1,3 +1,29 @@
+.ui-separator-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(124, 192, 97, 0.1); /* very transparent green */
+    z-index: 2;
+    pointer-events: none;
+}
+/* Responsive grass border switch */
+.footer-grass-wide {
+    display: block;
+}
+.footer-grass-thin {
+    display: none;
+}
+
+@media (max-width: 620px) {
+    .footer-grass-wide {
+        display: none;
+    }
+    .footer-grass-thin {
+        display: block;
+    }
+}
 /* Footer Bar */
 .footer-bar {
     width: 100vw;
@@ -13,20 +39,36 @@
     box-shadow: 0 -2px 8px rgba(60, 100, 60, 0.08);
 }
 
-.footer-grass {
+.footer-grass-wide {
         width: 100%;
-        height: 38px;
+        height: 18px;
         position: fixed;
         left: 0;
-        bottom: 30px;
+        bottom: 32px;
         z-index: 11;
         margin: 0;
         pointer-events: none;
         background-image:
-            url('data:image/svg+xml;utf8,<svg width="100" height="38" viewBox="0 0 100 38" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="38" fill="none"/><g><path d="M0,38 Q5,10 10,38 Q15,20 20,38 Q25,7 30,38 Q35,25 40,38 Q45,15 50,38 Q55,7 60,38 Q65,25 70,38 Q75,20 80,38 Q85,7 90,38 Q95,25 100,38 V38 H0 Z" fill="%236da557"/></g></svg>');
+            url('data:image/svg+xml;utf8,<svg width="100" height="18" viewBox="0 0 100 18" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="18" fill="none"/><g><path d="M0,18 Q5,5 10,18 Q15,10 20,18 Q25,3 30,18 Q35,12 40,18 Q45,7 50,18 Q55,3 60,18 Q65,12 70,18 Q75,10 80,18 Q85,3 90,18 Q95,12 100,18 V18 H0 Z" fill="%236da557"/></g></svg>');
         background-repeat: repeat-x;
         background-position: top left;
-        background-size: 100px 38px;
+        background-size: 100px 18px;
+}
+
+.footer-grass-thin {
+        width: 100%;
+        height: 18px;
+        position: fixed;
+        left: 0;
+        bottom: 55px;
+        z-index: 11;
+        margin: 0;
+        pointer-events: none;
+        background-image:
+            url('data:image/svg+xml;utf8,<svg width="100" height="18" viewBox="0 0 100 18" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="18" fill="none"/><g><path d="M0,18 Q5,5 10,18 Q15,10 20,18 Q25,3 30,18 Q35,12 40,18 Q45,7 50,18 Q55,3 60,18 Q65,12 70,18 Q75,10 80,18 Q85,3 90,18 Q95,12 100,18 V18 H0 Z" fill="%236da557"/></g></svg>');
+        background-repeat: repeat-x;
+        background-position: top left;
+        background-size: 100px 18px;
 }
 
 .footer-content {
