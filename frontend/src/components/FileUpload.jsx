@@ -4,7 +4,7 @@ import { uploadPhoto } from '../services/api';
 import { Upload } from 'lucide-react';
 import '../styles/FileUpload.css';
 
-function FileUpload({ trailName, onUploadStart, onUploadSuccess, onUploadError }) {
+function FileUpload({ orgName, trailName, onUploadStart, onUploadSuccess, onUploadError }) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -81,14 +81,22 @@ function FileUpload({ trailName, onUploadStart, onUploadSuccess, onUploadError }
             onUploadStart();
 
             //process image with metadata
-
             const processedImage = await processImageMetadata(
                 selectedFile,
                 trailName
             );
 
-            //upload to backend
-            await uploadPhoto(processedImage, trailName, onUploadError);
+            //upload to backend with correct parameter order
+            // uploadPhoto(processedImage, orgName, trailName, onRetry)
+            await uploadPhoto(
+                processedImage,
+                orgName,        // Organization name
+                trailName,      // Trail name
+                (errorMsg, retryCount) => {  // onRetry callback
+                    console.log(`Retry attempt ${retryCount}: ${errorMsg}`);
+                    // You can add UI feedback here if needed
+                }
+            );
 
             onUploadSuccess();
 
