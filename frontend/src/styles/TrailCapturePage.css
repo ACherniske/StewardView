@@ -1,96 +1,20 @@
-.ui-separator-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(124, 192, 97, 0.1); /* very transparent green */
-    z-index: 2;
-    pointer-events: none;
-}
-/* Responsive grass border switch */
-.footer-grass-wide {
-    display: block;
-}
-.footer-grass-thin {
-    display: none;
-}
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
 
-@media (max-width: 620px) {
-    .footer-grass-wide {
-        display: none;
-    }
-    .footer-grass-thin {
-        display: block;
-    }
-}
-/* Footer Bar */
-.footer-bar {
-    width: 100vw;
-    background: #6da557;
-    color: #f3fbe3;
-    text-align: center;
-    padding: 0.35rem 0 0.25rem 0;
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    z-index: 10;
-    font-size: 0.95rem;
-    box-shadow: 0 -2px 8px rgba(60, 100, 60, 0.08);
-}
-
-.footer-grass-wide {
-        width: 100%;
-        height: 18px;
-        position: fixed;
-        left: 0;
-        bottom: 32px;
-        z-index: 11;
-        margin: 0;
-        pointer-events: none;
-        background-image:
-            url('data:image/svg+xml;utf8,<svg width="100" height="18" viewBox="0 0 100 18" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="18" fill="none"/><g><path d="M0,18 Q5,5 10,18 Q15,10 20,18 Q25,3 30,18 Q35,12 40,18 Q45,7 50,18 Q55,3 60,18 Q65,12 70,18 Q75,10 80,18 Q85,3 90,18 Q95,12 100,18 V18 H0 Z" fill="%236da557"/></g></svg>');
-        background-repeat: repeat-x;
-        background-position: top left;
-        background-size: 100px 18px;
-}
-
-.footer-grass-thin {
-        width: 100%;
-        height: 18px;
-        position: fixed;
-        left: 0;
-        bottom: 55px;
-        z-index: 11;
-        margin: 0;
-        pointer-events: none;
-        background-image:
-            url('data:image/svg+xml;utf8,<svg width="100" height="18" viewBox="0 0 100 18" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="18" fill="none"/><g><path d="M0,18 Q5,5 10,18 Q15,10 20,18 Q25,3 30,18 Q35,12 40,18 Q45,7 50,18 Q55,3 60,18 Q65,12 70,18 Q75,10 80,18 Q85,3 90,18 Q95,12 100,18 V18 H0 Z" fill="%236da557"/></g></svg>');
-        background-repeat: repeat-x;
-        background-position: top left;
-        background-size: 100px 18px;
-}
-
-.footer-content {
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.footer-content a {
-    color: #f3fbe3;
-    text-decoration: underline;
-}
-/* Main page styling */
-html, body {
+html,
+body {
     background: #e3fadf !important;
-        margin: 0;
     min-height: 100vh;
     width: 100%;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
 }
+
+/* ==========================================================================
+   Page Layout
+   ========================================================================== */
 
 .trail-capture-page {
     min-height: 100vh;
@@ -114,19 +38,21 @@ html, body {
     pointer-events: none;
 }
 
-/* Main container */
+/* ==========================================================================
+   Main Container
+   ========================================================================== */
+
 .trail-capture-container {
     position: relative;
     z-index: 2;
     max-width: 600px;
     width: 100%;
     margin: 2.5rem 1.5rem;
-    margin-left: auto;
-    margin-right: auto;
+    margin-inline: auto;
+    padding: 2rem;
     background: #fff;
     border-radius: 20px;
-    box-shadow: 0 4px 24px 0 rgba(60, 100, 60, 0.10);
-    padding: 2rem;
+    box-shadow: 0 4px 24px 0 rgba(60, 100, 60, 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -163,19 +89,22 @@ html, body {
     box-sizing: border-box;
 }
 
-/* Toggle navigation for mobile */
+/* ==========================================================================
+   Toggle Navigation (Mobile Tabs)
+   ========================================================================== */
+
 .capture-toggle-nav {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
     max-width: 400px;
-    background: #f8fdf7;
-    border-radius: 14px;
-    box-shadow: inset 0 1px 3px rgba(60, 100, 60, 0.08);
     margin-bottom: 2rem;
     padding: 0.35rem;
     gap: 0.35rem;
+    background: #f8fdf7;
+    border-radius: 14px;
+    box-shadow: inset 0 1px 3px rgba(60, 100, 60, 0.08);
     box-sizing: border-box;
 }
 
@@ -188,9 +117,9 @@ html, body {
     font-size: 1.05rem;
     font-weight: 600;
     padding: 0.8rem 1.2rem;
+    letter-spacing: 0.01em;
     transition: all 0.25s ease;
     cursor: pointer;
-    letter-spacing: 0.01em;
 }
 
 .capture-toggle-nav .toggle-btn:hover:not(.active) {
@@ -201,14 +130,90 @@ html, body {
 .capture-toggle-nav .toggle-btn.active {
     background: linear-gradient(135deg, #7bb661 0%, #6da557 100%);
     color: #fff;
-    box-shadow: 0 3px 10px rgba(123, 182, 97, 0.35), 0 1px 3px rgba(123, 182, 97, 0.2);
+    box-shadow: 
+        0 3px 10px rgba(123, 182, 97, 0.35),
+        0 1px 3px rgba(123, 182, 97, 0.2);
     transform: translateY(-1px);
 }
 
-/* Responsive Design */
+/* ==========================================================================
+   UI Separator Overlay
+   ========================================================================== */
+
+.ui-separator-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(124, 192, 97, 0.1);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Footer Bar & Grass Border
+   ========================================================================== */
+
+.footer-bar {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+    width: 100vw;
+    padding: 0.35rem 0 0.25rem;
+    background: #6da557;
+    color: #f3fbe3;
+    text-align: center;
+    font-size: 0.95rem;
+    box-shadow: 0 -2px 8px rgba(60, 100, 60, 0.08);
+}
+
+.footer-content {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.footer-content a {
+    color: #f3fbe3;
+    text-decoration: underline;
+}
+
+/* Grass Border SVG */
+.footer-grass-wide,
+.footer-grass-thin {
+    position: fixed;
+    left: 0;
+    z-index: 11;
+    width: 100%;
+    height: 18px;
+    margin: 0;
+    pointer-events: none;
+    background-image: url('data:image/svg+xml;utf8,<svg width="100" height="18" viewBox="0 0 100 18" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="18" fill="none"/><g><path d="M0,18 Q5,5 10,18 Q15,10 20,18 Q25,3 30,18 Q35,12 40,18 Q45,7 50,18 Q55,3 60,18 Q65,12 70,18 Q75,10 80,18 Q85,3 90,18 Q95,12 100,18 V18 H0 Z" fill="%236da557"/></g></svg>');
+    background-repeat: repeat-x;
+    background-position: top left;
+    background-size: 100px 18px;
+}
+
+.footer-grass-wide {
+    display: block;
+    bottom: 32px;
+}
+
+.footer-grass-thin {
+    display: none;
+    bottom: 55px;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+/* Tablet and above */
 @media (min-width: 700px) {
     .trail-capture-container {
-        padding: 3rem 2.5rem 2.5rem 2.5rem;
+        padding: 3rem 2.5rem 2.5rem;
     }
 
     .trail-capture-title {
@@ -216,12 +221,23 @@ html, body {
     }
 }
 
+/* Mobile (620px and below) - Grass border swap */
+@media (max-width: 620px) {
+    .footer-grass-wide {
+        display: none;
+    }
+
+    .footer-grass-thin {
+        display: block;
+    }
+}
+
+/* Mobile (600px and below) */
 @media (max-width: 600px) {
     .trail-capture-container {
         width: 100%;
         margin: 1.5rem 1rem;
-        margin-left: auto;
-        margin-right: auto;
+        margin-inline: auto;
         padding: 1.75rem 1.25rem;
         border-radius: 16px;
     }
@@ -236,9 +252,9 @@ html, body {
     }
 
     .capture-toggle-nav {
-        padding: 0.3rem;
-        margin-bottom: 1.75rem;
         max-width: 100%;
+        margin-bottom: 1.75rem;
+        padding: 0.3rem;
     }
 
     .capture-toggle-nav .toggle-btn {
@@ -247,13 +263,13 @@ html, body {
     }
 }
 
+/* Small mobile (400px and below) */
 @media (max-width: 400px) {
     .trail-capture-container {
         min-width: 390px;
         width: 100%;
         margin: 1rem 0.75rem;
-        margin-left: auto;
-        margin-right: auto;
+        margin-inline: auto;
         padding: 1.5rem 1rem;
     }
 
@@ -262,8 +278,8 @@ html, body {
     }
 
     .capture-toggle-nav {
-        padding: 0.25rem;
         margin-bottom: 1.5rem;
+        padding: 0.25rem;
     }
 
     .capture-toggle-nav .toggle-btn {
