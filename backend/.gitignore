@@ -12,6 +12,9 @@ yarn-error.log*
 
 # Google credentials (NEVER COMMIT!)
 credentials.json
+oauth2-credentials.json
+token.json
+
 *.json
 !package.json
 !package-lock.json
