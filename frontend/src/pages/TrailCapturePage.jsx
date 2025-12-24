@@ -75,6 +75,7 @@ function TrailCapturePage() {
   return (
     <div className="trail-capture-page">
       <PlantBackground className="plant-bg-layer" />
+      <div className="ui-separator-overlay"></div>
       <div className="trail-capture-container">
         <h1 className="trail-capture-title">{displayTrailName}</h1>
         <div className="trail-capture-card-area">
@@ -137,7 +138,8 @@ function TrailCapturePage() {
       />
 
       {/* Footer Grass Border */}
-      <div className="footer-grass"></div>
+      <div className="footer-grass-wide"></div>
+        <div className="footer-grass-thin"></div>
       {/* Footer Bar */}
       <footer className="footer-bar">
         <div className="footer-content">
