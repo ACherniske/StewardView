@@ -14,6 +14,10 @@ html, body {
     background: #e3fadf;
     position: relative;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .plant-bg-layer {
