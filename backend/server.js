@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 //load config  
-const config = require('.config/config');
+const config = require('./config/config');
 
 //services
 const driveService = require('./services/driveService');
@@ -40,7 +40,7 @@ app.use(cors({
 
         if (config.allowedOrigins.includes(origin) || config.allowedOrigins.includes('*')) {
             callback(null, true);
-        } esle {
+        } else {
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -74,10 +74,10 @@ app.get('/', (req, res) => {
     endpoints: {
         health: 'GET /api/health',
         organizations: 'GET /api/organizations',
-        trails: 'GET /api/:org/trails',
-        uploadPhoto: 'POST /api/:org/:trail/upload',
-        generateTimelapse: 'POST /api/:org/generate-timelapse',
-        generateTrailTimelapse: 'POST /api/:org/:trail/generate-timelapse',
+        trails: 'GET /api/:orgName/trails',
+        uploadPhoto: 'POST /api/:orgName/:trail/upload',
+        generateTimelapse: 'POST /api/:orgName/generate-timelapse',
+        generateTrailTimelapse: 'POST /api/:orgName/:trail/generate-timelapse',
     },
     docs: 'https://github.com/stewardview/stewardview',
   });
@@ -123,12 +123,12 @@ async function startServer() {
         console.log('  GET  /api/health    - Service status');
 
         console.log('  GET  /api/organizations   - List all organizations');
-        console.log('  GET  /api/:org/trails   - List trails');
+        console.log('  GET  /api/:orgName/trails   - List trails');
 
-        console.log('  POST /api/:org/:trail/upload - Upload photo');
+        console.log('  POST /api/:orgName/:trailName/upload - Upload photo');
 
-        console.log('  POST /api/:org/generate-timelapse - Create organization timelapse');
-        console.log('  POST /api/:org/:trail/generate-timelapse - Create trail timelapse');
+        console.log('  POST /api/:orgName/generate-timelapse - Create organization timelapse');
+        console.log('  POST /api/:orgName/:trailName/generate-timelapse - Create trail timelapse');
 
         console.log('');
         console.log('CORS Origins:', config.allowedOrigins.join(', '));
