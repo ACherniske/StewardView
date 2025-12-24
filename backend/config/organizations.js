@@ -14,15 +14,15 @@
 
 const organizations = {
     //example organization
-    "example-org": {
-        name: "Example Organization",
-        driveFolderId: "1A2B3C4D5E6F7G8H9I0J", //replace with actual folder ID
+    "test-organization": {
+        name: "Test Organization",
+        driveFolderId: "1fBOxspMIqUWu-TqMsvCzzSp0BehZq09d",
         active: true
     },
 
     "kent-land-trust": {
         name: "Kent Land Trust",
-        driveFolderId: "1oybMDc9Ei3zkmvlwj767_ANcY95z8Zwb", //replace with actual folder ID
+        driveFolderId: "1oybMDc9Ei3zkmvlwj767_ANcY95z8Zwb",
         active: true
     },
 
