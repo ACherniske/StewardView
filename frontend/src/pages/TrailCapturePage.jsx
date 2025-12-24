@@ -10,7 +10,8 @@ import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import '../styles/TrailCapturePage.css';
 
 function TrailCapturePage() {
-  const { trailName } = useParams();
+  // Extract BOTH orgName and trailName from URL params
+  const { orgName, trailName } = useParams();
   const [activeTab, setActiveTab] = useState('camera');
   const [uploadFeedback, setUploadFeedback] = useState({
     show: false,
@@ -97,6 +98,7 @@ function TrailCapturePage() {
               </nav>
               {activeTab === 'camera' ? (
                 <MobileCamera
+                  orgName={orgName}
                   trailName={trailName}
                   onUploadStart={handleUploadStart}
                   onUploadSuccess={handleUploadSuccess}
@@ -104,6 +106,7 @@ function TrailCapturePage() {
                 />
               ) : (
                 <FileUpload
+                  orgName={orgName}
                   trailName={trailName}
                   onUploadStart={handleUploadStart}
                   onUploadSuccess={handleUploadSuccess}
@@ -114,6 +117,7 @@ function TrailCapturePage() {
           ) : (
             <div className="capture-card">
               <FileUpload
+                orgName={orgName}
                 trailName={trailName}
                 onUploadStart={handleUploadStart}
                 onUploadSuccess={handleUploadSuccess}
