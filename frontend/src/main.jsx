@@ -9,8 +9,19 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
+        {
+        /* Home Path 
+         * Org Path (optional) (display org-specific info and trail timelapses)
+         * Trail Path (view gifs and trail info)
+         * Trail Upload Path (capture/upload photos)
+         */
+        }
+
         <Route path="/" element={<App />} />
-        <Route path="/:orgName/:trailName" element={<TrailCapturePage />} />
+        <Route path="/:orgName" element={<App />} />
+        <Route path="/:orgName/:trailName" element={<App />} />
+        <Route path="/:orgName/:trailName/upload" element={<TrailCapturePage />} />
+
       </Routes>
     </BrowserRouter>
   </StrictMode>
