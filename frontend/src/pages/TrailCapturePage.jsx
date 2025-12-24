@@ -135,6 +135,14 @@ function TrailCapturePage() {
         maxRetries={uploadFeedback.maxRetries}
         onClose={handleModalClose}
       />
+
+      {/* Footer Bar */}
+      <footer className="footer-bar">
+        <div className="footer-content">
+          StewardView &bull; <span>Developed by Aiden Cherniske</span> &bull; <span>2025</span><br />
+          <span>For support: <a href="mailto:stewardview@example.com">apcherniske@gmail.com</a></span>
+        </div>
+      </footer>
     </div>
   );
 }

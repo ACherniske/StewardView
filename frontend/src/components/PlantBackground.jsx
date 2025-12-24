@@ -218,10 +218,11 @@ function PlantBackground() {
             state.growthPercent = 1;
           }
         }
+        const verticalOffset = 50; // Offset to position plants above bottom
         drawLsysLerp(
           param.x,
-          // Place base of plant at the very bottom of the canvas
-          (canvas.height / (window.devicePixelRatio || 1)),
+          // Place base of plant at the very bottom of the canvas with offset
+          (canvas.height / (window.devicePixelRatio || 1)) - verticalOffset,
           state.word,
           state.growthPercent,
           param.len,

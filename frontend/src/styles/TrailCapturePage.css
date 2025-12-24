@@ -1,3 +1,23 @@
+/* Footer Bar */
+.footer-bar {
+    width: 100vw;
+    background: #d2eac2;
+    color: #3a5a40;
+    text-align: center;
+    padding: 1rem 0;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+    font-size: 1rem;
+    box-shadow: 0 -2px 8px rgba(60, 100, 60, 0.08);
+}
+
+.footer-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
 /* Main page styling */
 html, body {
     background: #e3fadf !important;
