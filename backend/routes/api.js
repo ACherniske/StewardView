@@ -1,8 +1,10 @@
 const config = require('../config/config');
 const express = require('express');
 const multer = require('multer');
-const fs = require('fs');
+const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 const { listActiveOrganizations } = require('../config/organizations');
 const driveService = require('../services/driveService');
 const timelapseService = require('../services/timelapseService');
@@ -18,26 +20,31 @@ const {
 
 const router = express.Router();
 
-//configure multer for file uploads
+// ============================================================================
+// MULTER CONFIGURATION
+// ============================================================================
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadDir = path.join(process.cwd(), config.uploadDir);
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
+        if (!fsSync.existsSync(uploadDir)) {
+            fsSync.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
+        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+        const extension = path.extname(file.originalname);
+        cb(null, `${uniqueSuffix}${extension}`);
     },
 });
 
 const upload = multer({
-    storage: storage,
+    storage,
     limits: { fileSize: config.maxFileSizeBytes },
     fileFilter: (req, file, cb) => {
-        if (config.allowedFileTypes.includes(file.mimetype)) {
+        const isValidType = config.allowedFileTypes.includes(file.mimetype);
+        if (isValidType) {
             cb(null, true);
         } else {
             cb(new Error('Unsupported file type'), false);
@@ -45,17 +52,64 @@ const upload = multer({
     },
 });
 
-/**
- * health: 'GET /api/health',
- * organizations: 'GET /api/organizations',
- * trails: 'GET /api/:orgName/trails',
- * uploadPhoto: 'POST /api/:orgName/:trailName/upload',
- * generateTimelapse: 'POST /api/:orgName/generate-timelapse',
- * generateTrailTimelapse: 'POST /api/:orgName/:trailName/generate-timelapse',
- */
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+const generateFilename = (trailName, timestamp, extension) => {
+    const date = new Date(timestamp);
+    const dateStr = date.toISOString().split('T')[0];
+    const timeStr = date.toTimeString().split(' ')[0].replace(/:/g, '-');
+    const safeTrailName = driveService.sanitizeName(trailName);
+    return `${safeTrailName}_${dateStr}_${timeStr}${extension}`;
+};
+
+const deleteFileIfExists = async (filePath) => {
+    try {
+        await fs.unlink(filePath);
+    } catch (error) {
+        if (error.code !== 'ENOENT') {
+            console.error('Error deleting file:', error.message);
+        }
+    }
+};
+
+const cleanupTempFile = (req) => {
+    if (req.file?.path && fsSync.existsSync(req.file.path)) {
+        fsSync.unlinkSync(req.file.path);
+    }
+};
+
+const getOrgSlug = (req) => req.organization.slug;
+
+const sendError = (res, statusCode, error, message = null) => {
+    console.error(`Error (${statusCode}):`, message || error);
+    res.status(statusCode).json({
+        error: typeof error === 'string' ? error : error.message,
+        message: message || (typeof error === 'string' ? error : error.message),
+    });
+};
+
+const cleanupTimelapseResult = (result) => {
+    if (result) {
+        timelapseService.cleanup(result.tempFiles, result.path);
+    }
+};
+
+// ============================================================================
+// MIDDLEWARE CHAINS
+// ============================================================================
+
+const orgMiddleware = [validateOrganization, logOrganizationAccess];
+const trailMiddleware = [...orgMiddleware, validateTrailName];
+
+// ============================================================================
+// ROUTE HANDLERS
+// ============================================================================
 
 /**
  * Health check endpoint
+ * GET /api/health
  */
 router.get('/health', (req, res) => {
     res.json({
@@ -70,9 +124,8 @@ router.get('/health', (req, res) => {
 
 /**
  * List active organizations
- * 'GET /api/organizations',
+ * GET /api/organizations
  */
-
 router.get('/organizations', async (req, res, next) => {
     try {
         const organizations = await listActiveOrganizations();
@@ -86,47 +139,118 @@ router.get('/organizations', async (req, res, next) => {
  * List trails for an organization
  * GET /api/:orgName/trails
  */
-router.get('/:orgName/trails', validateOrganization, logOrganizationAccess, async (req, res, next) => {
-    const { orgName } = req.params;
+router.get('/:orgName/trails', orgMiddleware, async (req, res, next) => {
     try {
-        const trails = await driveService.listTrailsInOrganization(req.organization.slug);
-        res.json({ organization: req.organization, trails });
-    }
-    catch (error) {
+        const trails = await driveService.listTrailsInOrganization(getOrgSlug(req));
+        res.json({
+            organization: req.organization,
+            trails,
+        });
+    } catch (error) {
         next(error);
     }
 });
 
 /**
+ * Get all photos for a trail
+ * GET /api/:orgName/:trailName
+ */
+router.get('/:orgName/:trailName', trailMiddleware, async (req, res, next) => {
+    try {
+        // First check if trail exists
+        const trails = await driveService.listTrailsInOrganization(getOrgSlug(req));
+        const trailExists = trails.includes(req.trailName);
+        
+        if (!trailExists) {
+            return sendError(res, 404, 'Trail not found', `Trail '${req.trailName}' does not exist in organization`);
+        }
+
+        const files = await driveService.listFilesInTrail(
+            getOrgSlug(req),
+            req.trailName
+        );
+        res.json({ files });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * Serve a thumbnail for a trail image
+ * GET /api/:orgName/:trailName/thumbnail/:fileId
+ * Query: size (default 256)
+ */
+router.get(
+    '/:orgName/:trailName/thumbnail/:fileId',
+    trailMiddleware,
+    async (req, res, next) => {
+        const { fileId } = req.params;
+        const size = parseInt(req.query.size, 10) || 256;
+
+        try {
+            const files = await driveService.listFilesInTrail(
+                getOrgSlug(req),
+                req.trailName
+            );
+            
+            const file = files.find(f => f.id === fileId);
+            if (!file) {
+                return sendError(res, 404, 'File not found');
+            }
+
+            console.log(`[THUMBNAIL] Generating thumbnail for: ${file.name} (${fileId})`);
+
+            // Get image buffer directly from Google Drive
+            const imageBuffer = await driveService.getFileBuffer(fileId);
+            
+            if (!imageBuffer || imageBuffer.length === 0) {
+                console.error('[THUMBNAIL] Empty or null buffer received');
+                return sendError(res, 500, 'Failed to download image from Drive');
+            }
+
+            console.log(`[THUMBNAIL] Creating thumbnail with Sharp (size: ${size}px)`);
+            const thumbnail = await sharp(imageBuffer)
+                .resize(size, size, { fit: 'cover' })
+                .jpeg({ quality: 85 })
+                .toBuffer();
+
+            console.log(`[THUMBNAIL] Thumbnail generated: ${thumbnail.length} bytes`);
+
+            res.set('Content-Type', 'image/jpeg');
+            res.set('Cache-Control', 'public, max-age=86400');
+            res.send(thumbnail);
+        } catch (error) {
+            console.error('[THUMBNAIL] Error:', error.message);
+            sendError(res, 500, 'Thumbnail generation failed', error.message);
+        }
+    }
+);
+
+/**
  * Upload photo to a trail
  * POST /api/:orgName/:trailName/upload
  */
-
-router.post('/:orgName/:trailName/upload',
-    validateOrganization,
-    validateTrailName,
-    logOrganizationAccess,
+router.post(
+    '/:orgName/:trailName/upload',
+    trailMiddleware,
     upload.single('photo'),
     validateUpload,
     async (req, res, next) => {
-        console.log(`Photo upload request for ${req.organization.slug} / ${req.trailName}`);
+        const { organization, trailName, file, body } = req;
+        const { timestamp } = body;
+        const orgSlug = getOrgSlug(req);
+
+        console.log(`Photo upload request for ${orgSlug} / ${trailName}`);
 
         try {
-            const { timestamp } = req.body;
-            const file = req.file;
-            const orgSlug = req.organization.slug;
-            const trailName = req.trailName;
-
-            //format filename: TrailName_YYYY_MM_DD_HH-MM-SS.jpg
-            const date = new Date(timestamp);
-            const dateStr = date.toISOString().split('T')[0];
-            const timeStr = date.toTimeString().split(' ')[0].replace(/:/g, '-');
-            const safeTraileName = driveService.sanitizeName(trailName);
-            const filename = `${safeTraileName}_${dateStr}_${timeStr}${path.extname(file.originalname)}`;
+            const filename = generateFilename(
+                trailName,
+                timestamp,
+                path.extname(file.originalname)
+            );
 
             console.log(`Uploading file: ${filename}`);
 
-            //upload to Google Drive (creates trail folder if needed)
             const description = `StewardView observation at ${trailName} on ${timestamp}`;
             const driveFile = await driveService.uploadFile(
                 orgSlug,
@@ -137,17 +261,16 @@ router.post('/:orgName/:trailName/upload',
                 description
             );
 
-            //delete local temp file
-            if (fs.existsSync(file.path)) {
-                fs.unlinkSync(file.path);
-            }
+            await deleteFileIfExists(file.path);
 
-            console.log(`Upload successful: ${driveFile.name} (ID: ${driveFile.id})`);
+            console.log(
+                `Upload successful: ${driveFile.name} (ID: ${driveFile.id})`
+            );
 
             res.json({
                 success: true,
                 message: 'Photo uploaded successfully',
-                organization: req.organization.name,
+                organization: organization.name,
                 trail: trailName,
                 file: {
                     id: driveFile.id,
@@ -159,17 +282,8 @@ router.post('/:orgName/:trailName/upload',
                 },
             });
         } catch (error) {
-            console.error('Error uploading photo:', error.message);
-            
-            //cleanup if exists
-            if (req.file && fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
-            }
-
-            res.status(500).json({
-                error: 'Upload failed',
-                message: error.message,
-            });
+            cleanupTempFile(req);
+            sendError(res, 500, 'Upload failed', error.message);
         }
     }
 );
@@ -178,48 +292,44 @@ router.post('/:orgName/:trailName/upload',
  * Generate timelapse for an organization
  * POST /api/:orgName/generate-timelapse
  * Body: { trails: [trailName1, trailName2, ...] }
- * If trails is empty or missing, include all trails in the organization
+ * If trails is empty or missing, includes all trails in the organization
  */
-
-router.post('/:orgName/generate-timelapse',
-    validateOrganization,
-    logOrganizationAccess,
+router.post(
+    '/:orgName/generate-timelapse',
+    orgMiddleware,
     validateTimelapseRequest,
     async (req, res, next) => {
-        console.log(`Timelapse generation request for organization: ${req.organization.slug}`);
+        const { body } = req;
+        const { trailNames } = body;
+        const orgSlug = getOrgSlug(req);
+
+        console.log(`Timelapse generation request for organization: ${orgSlug}`);
+
+        const trailsDisplay =
+            trailNames && trailNames.length > 0
+                ? trailNames.join(', ')
+                : 'ALL';
+        console.log(`Generating timelapse for trails: ${trailsDisplay}`);
 
         let result = null;
 
         try {
-            const { trailNames } = req.body;
-            const orgSlug = req.organization.slug;
-
-            console.log(`Generating timelapse for trails: ${trailNames && trailNames.length > 0 ? trailNames.join(', ') : 'ALL'}`);
-
-            result = await timelapseService.generateTimeLapse(orgSlug, trailNames);
+            result = await timelapseService.generateTimeLapse(
+                orgSlug,
+                trailNames
+            );
 
             console.log(`Timelapse generation successful: ${result.path}`);
 
-            res.sendFile(result.path, err => {
+            res.sendFile(result.path, (err) => {
                 if (err) {
                     console.error('Error sending timelapse file:', err.message);
                 }
-
-                //cleanup after sending
-                if (result) {
-                    timelapseService.cleanup(result.tempFiles, result.path);
-                }
+                cleanupTimelapseResult(result);
             });
         } catch (error) {
-            console.error('Error generating timelapse:', error.message);
-            //cleanup on error
-            if (result) {
-                timelapseService.cleanup(result.tempFiles, result.path);
-            }
-            res.status(500).json({
-                error: 'Timelapse generation failed',
-                message: error.message,
-            });
+            cleanupTimelapseResult(result);
+            sendError(res, 500, 'Timelapse generation failed', error.message);
         }
     }
 );
