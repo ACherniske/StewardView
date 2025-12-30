@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
 import TrailCapturePage from './pages/TrailCapturePage.jsx';
+import TimelapseViewerPage from './pages/TimelapseViewerPage.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -19,7 +20,7 @@ createRoot(document.getElementById('root')).render(
 
         <Route path="/" element={<App />} />
         <Route path="/:orgName" element={<App />} />
-        <Route path="/:orgName/:trailName" element={<App />} />
+        <Route path="/:orgName/:trailName" element={<TimelapseViewerPage />} />
         <Route path="/:orgName/:trailName/upload" element={<TrailCapturePage />} />
 
       </Routes>
