@@ -236,6 +236,58 @@ class DriveService {
     }
 
     /**
+     * Get file as buffer (for thumbnails and in-memory processing)
+     * @param {string} fileId - Google Drive file ID
+     * @returns {Promise<Buffer>} File content as buffer
+     */
+    async getFileBuffer(fileId) {
+        try {
+            const response = await this.drive.files.get(
+                { fileId: fileId, alt: 'media' },
+                { responseType: 'stream' }
+            );
+            
+            // Collect stream data into buffer
+            const chunks = [];
+            
+            return new Promise((resolve, reject) => {
+                response.data
+                    .on('data', (chunk) => chunks.push(chunk))
+                    .on('end', () => {
+                        const buffer = Buffer.concat(chunks);
+                        console.log(`File buffer retrieved: ${fileId} (${buffer.length} bytes)`);
+                        
+                        // Debug: Check the first few bytes to identify file type
+                        const header = buffer.slice(0, 16).toString('hex');
+                        console.log(`Buffer header: ${header}`);
+                        
+                        // Check for common image formats
+                        const isPNG = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+                        const isJPEG = buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+                        const isGIF = buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
+                        
+                        console.log(`File type detection: PNG=${isPNG}, JPEG=${isJPEG}, GIF=${isGIF}`);
+                        
+                        if (!isPNG && !isJPEG && !isGIF) {
+                            console.warn('WARNING: Buffer does not appear to be a valid image format');
+                            // Log first 100 chars as string to see if it's HTML/text
+                            console.log('Buffer start (as text):', buffer.slice(0, 100).toString('utf8'));
+                        }
+                        
+                        resolve(buffer);
+                    })
+                    .on('error', (error) => {
+                        console.error(`Stream error for file ${fileId}:`, error.message);
+                        reject(error);
+                    });
+            });
+        } catch (error) {
+            console.error(`Error getting file buffer for ID '${fileId}':`, error.message);
+            throw error;
+        }
+    }
+
+    /**
      * Clear caches
      */
 
