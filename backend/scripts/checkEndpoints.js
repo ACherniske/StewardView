@@ -13,11 +13,14 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 
-// Configuration
-const BASE_URL = process.argv[2] || 'http://localhost:3001';
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+const BASE_URL = process.argv[2] || 'http://localhost:5000';
 const TEST_ORG = 'kent-land-trust'; // Change to your test organization
 const TEST_TRAIL = 'test-trail';
-const TEST_IMAGE_PATH = './test-image.jpg'; // Path to a test image file
+const TEST_IMAGE_PATH = './test-image.jpg';
 
 // Colors for console output
 const colors = {
@@ -34,12 +37,14 @@ const results = {
     passed: 0,
     failed: 0,
     skipped: 0,
-    tests: []
+    tests: [],
+    uploadedFileId: null, // Store uploaded file ID for thumbnail test
 };
 
-/**
- * Helper function to make HTTP requests
- */
+// ============================================================================
+// HTTP REQUEST HELPERS
+// ============================================================================
+
 async function makeRequest(method, endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
     
@@ -56,6 +61,9 @@ async function makeRequest(method, endpoint, options = {}) {
         let data;
         if (contentType && contentType.includes('application/json')) {
             data = await response.json();
+        } else if (contentType && contentType.includes('image/')) {
+            // For image responses (thumbnails)
+            data = await response.arrayBuffer();
         } else {
             data = await response.text();
         }
@@ -64,7 +72,8 @@ async function makeRequest(method, endpoint, options = {}) {
             status: response.status,
             ok: response.ok,
             data,
-            headers: Object.fromEntries(response.headers.entries())
+            headers: Object.fromEntries(response.headers.entries()),
+            contentType
         };
     } catch (error) {
         return {
@@ -75,9 +84,6 @@ async function makeRequest(method, endpoint, options = {}) {
     }
 }
 
-/**
- * Helper function to upload file using form-data with http module
- */
 async function uploadFile(endpoint, formData) {
     return new Promise((resolve, reject) => {
         const url = new URL(`${BASE_URL}${endpoint}`);
@@ -125,9 +131,10 @@ async function uploadFile(endpoint, formData) {
     });
 }
 
-/**
- * Create a test image if it doesn't exist
- */
+// ============================================================================
+// TEST UTILITIES
+// ============================================================================
+
 function createTestImage() {
     if (!fs.existsSync(TEST_IMAGE_PATH)) {
         // Create a simple 1x1 pixel PNG
@@ -147,19 +154,16 @@ function createTestImage() {
     }
 }
 
-/**
- * Print test result
- */
 function logTest(name, passed, message = '', data = null) {
-    const status = passed ? `${colors.green}✓ PASS${colors.reset}` : `${colors.red}✗ FAIL${colors.reset}`;
-    console.log(`  ${status} ${name}`);
+    const status = passed ? `${colors.green}PASS${colors.reset}` : `${colors.red}FAIL${colors.reset}`;
+    console.log(`  [${status}] ${name}`);
     
     if (message) {
-        console.log(`    ${colors.yellow}${message}${colors.reset}`);
+        console.log(`        ${colors.yellow}${message}${colors.reset}`);
     }
     
     if (data && !passed) {
-        console.log(`    ${colors.cyan}Response:${colors.reset}`, JSON.stringify(data, null, 2));
+        console.log(`        ${colors.cyan}Response:${colors.reset}`, JSON.stringify(data, null, 2));
     }
 
     results.tests.push({ name, passed, message, data });
@@ -170,26 +174,35 @@ function logTest(name, passed, message = '', data = null) {
     }
 }
 
-/**
- * Test Suite
- */
-async function runTests() {
-    console.log(`\n${colors.blue}${'='.repeat(60)}${colors.reset}`);
-    console.log(`${colors.blue}  StewardView API Endpoint Tests${colors.reset}`);
-    console.log(`${colors.blue}${'='.repeat(60)}${colors.reset}\n`);
-    console.log(`Testing API at: ${colors.cyan}${BASE_URL}${colors.reset}\n`);
+function logSkip(name, reason = '') {
+    console.log(`  ${colors.yellow}[SKIP]${colors.reset} ${name}`);
+    if (reason) {
+        console.log(`        ${colors.cyan}${reason}${colors.reset}`);
+    }
+    results.skipped++;
+}
 
-    // Test 1: Root endpoint
-    console.log(`${colors.yellow}Test Group: Basic Connectivity${colors.reset}`);
+function logGroup(name) {
+    console.log(`\n${colors.blue}━━━ ${name} ━━━${colors.reset}`);
+}
+
+// ============================================================================
+// TEST SUITE
+// ============================================================================
+
+async function testBasicConnectivity() {
+    logGroup('Basic Connectivity');
+
+    // Test: Root endpoint
     const rootResponse = await makeRequest('GET', '/');
     logTest(
-        'GET / (Root endpoint)',
+        'GET /',
         rootResponse.ok && rootResponse.data.service === 'StewardView API',
         rootResponse.ok ? 'API is responding' : 'API is not responding',
         rootResponse.data
     );
 
-    // Test 2: Health check
+    // Test: Health check
     const healthResponse = await makeRequest('GET', '/api/health');
     logTest(
         'GET /api/health',
@@ -197,9 +210,12 @@ async function runTests() {
         healthResponse.ok ? `Uptime: ${Math.floor(healthResponse.data.uptime)}s` : 'Health check failed',
         healthResponse.data
     );
+}
 
-    // Test 3: List organizations
-    console.log(`\n${colors.yellow}Test Group: Organizations${colors.reset}`);
+async function testOrganizations() {
+    logGroup('Organizations');
+
+    // Test: List organizations
     const orgsResponse = await makeRequest('GET', '/api/organizations');
     const hasOrgs = orgsResponse.ok && Array.isArray(orgsResponse.data.organizations);
     logTest(
@@ -209,8 +225,20 @@ async function runTests() {
         orgsResponse.data
     );
 
-    // Test 4: List trails for organization
-    console.log(`\n${colors.yellow}Test Group: Trails${colors.reset}`);
+    // Test: Invalid organization
+    const invalidOrgResponse = await makeRequest('GET', '/api/invalid-org-12345/trails');
+    logTest(
+        'GET /api/invalid-org-12345/trails',
+        !invalidOrgResponse.ok && invalidOrgResponse.status === 400,
+        'Correctly rejected invalid organization',
+        invalidOrgResponse.data
+    );
+}
+
+async function testTrails() {
+    logGroup('Trails');
+
+    // Test: List trails for organization
     const trailsResponse = await makeRequest('GET', `/api/${TEST_ORG}/trails`);
     const hasTrails = trailsResponse.ok && Array.isArray(trailsResponse.data.trails);
     logTest(
@@ -220,125 +248,278 @@ async function runTests() {
         trailsResponse.data
     );
 
-    // Test 5: Invalid organization
-    const invalidOrgResponse = await makeRequest('GET', '/api/invalid-org/trails');
+    // Test: Get photos for a trail
+    const photosResponse = await makeRequest('GET', `/api/${TEST_ORG}/${TEST_TRAIL}`);
+    const hasPhotos = photosResponse.ok && Array.isArray(photosResponse.data.files);
     logTest(
-        'GET /api/invalid-org/trails (should fail)',
-        !invalidOrgResponse.ok && invalidOrgResponse.status === 400,
-        'Correctly rejected invalid organization',
-        invalidOrgResponse.data
+        `GET /api/${TEST_ORG}/${TEST_TRAIL}`,
+        hasPhotos,
+        hasPhotos ? `Found ${photosResponse.data.files.length} photos` : 'Failed to get trail photos',
+        photosResponse.data
     );
 
-    // Test 6: Upload photo (requires test image)
-    console.log(`\n${colors.yellow}Test Group: Photo Upload${colors.reset}`);
+    // Store a file ID for thumbnail testing if available
+    if (hasPhotos && photosResponse.data.files.length > 0) {
+        results.uploadedFileId = photosResponse.data.files[0].id;
+    }
+}
+
+async function testPhotoUpload() {
+    logGroup('Photo Upload');
+
+    if (!fs.existsSync(TEST_IMAGE_PATH)) {
+        logSkip('Photo upload tests', 'No test image found');
+        logSkip('Upload validation test', 'No test image found');
+        return;
+    }
+
+    // Test: Valid upload
+    try {
+        const FormData = (await import('form-data')).default;
+        const formData = new FormData();
+        
+        formData.append('photo', fs.createReadStream(TEST_IMAGE_PATH), {
+            filename: 'test-image.jpg',
+            contentType: 'image/jpeg'
+        });
+        formData.append('timestamp', new Date().toISOString());
+
+        const uploadResponse = await uploadFile(`/api/${TEST_ORG}/${TEST_TRAIL}/upload`, formData);
+
+        logTest(
+            `POST /api/${TEST_ORG}/${TEST_TRAIL}/upload`,
+            uploadResponse.ok && uploadResponse.data.success,
+            uploadResponse.ok ? `Photo uploaded: ${uploadResponse.data.file?.name}` : 'Upload failed',
+            uploadResponse.data
+        );
+
+        // Store file ID for thumbnail test
+        if (uploadResponse.ok && uploadResponse.data.file?.id) {
+            results.uploadedFileId = uploadResponse.data.file.id;
+        }
+    } catch (error) {
+        logTest(
+            `POST /api/${TEST_ORG}/${TEST_TRAIL}/upload`,
+            false,
+            `Error: ${error.message}`
+        );
+    }
+
+    // Test: Upload without timestamp (should fail)
+    try {
+        const FormData = (await import('form-data')).default;
+        const formData = new FormData();
+        
+        formData.append('photo', fs.createReadStream(TEST_IMAGE_PATH), {
+            filename: 'test-image.jpg',
+            contentType: 'image/jpeg'
+        });
+        // Intentionally not adding timestamp
+
+        const invalidUploadResponse = await uploadFile(`/api/${TEST_ORG}/${TEST_TRAIL}/upload`, formData);
+
+        logTest(
+            'POST upload without timestamp',
+            !invalidUploadResponse.ok && invalidUploadResponse.status === 400,
+            'Correctly rejected upload without timestamp',
+            invalidUploadResponse.data
+        );
+    } catch (error) {
+        logTest(
+            'POST upload without timestamp',
+            false,
+            `Error: ${error.message}`
+        );
+    }
+}
+
+async function testThumbnails() {
+    logGroup('Thumbnails');
+
+    if (!results.uploadedFileId) {
+        logSkip('Thumbnail tests', 'No file ID available (upload a photo first or ensure trail has photos)');
+        return;
+    }
+
+    console.log(`        ${colors.cyan}Testing with file ID: ${results.uploadedFileId}${colors.reset}`);
+
+    // Test: Get thumbnail (default size)
+    const thumbnailResponse = await makeRequest(
+        'GET',
+        `/api/${TEST_ORG}/${TEST_TRAIL}/thumbnail/${results.uploadedFileId}`
+    );
     
-    if (fs.existsSync(TEST_IMAGE_PATH)) {
-        try {
-            const FormData = (await import('form-data')).default;
-            const formData = new FormData();
-            
-            // Use createReadStream for proper streaming
-            formData.append('photo', fs.createReadStream(TEST_IMAGE_PATH), {
-                filename: 'test-image.jpg',
-                contentType: 'image/jpeg'
-            });
-            formData.append('timestamp', new Date().toISOString());
-
-            const uploadResponse = await uploadFile(`/api/${TEST_ORG}/${TEST_TRAIL}/upload`, formData);
-
-            logTest(
-                `POST /api/${TEST_ORG}/${TEST_TRAIL}/upload`,
-                uploadResponse.ok && uploadResponse.data.success,
-                uploadResponse.ok ? `Photo uploaded: ${uploadResponse.data.file?.name}` : 'Upload failed',
-                uploadResponse.data
-            );
-        } catch (error) {
-            logTest(
-                `POST /api/${TEST_ORG}/${TEST_TRAIL}/upload`,
-                false,
-                `Error: ${error.message}`
-            );
-        }
-    } else {
-        console.log(`  ${colors.yellow}⊘ SKIP${colors.reset} Photo upload test (no test image)`);
-        results.skipped++;
-    }
-
-    // Test 7: Upload without timestamp (should fail)
-    if (fs.existsSync(TEST_IMAGE_PATH)) {
-        try {
-            const FormData = (await import('form-data')).default;
-            const formData = new FormData();
-            
-            // Use createReadStream for proper streaming
-            formData.append('photo', fs.createReadStream(TEST_IMAGE_PATH), {
-                filename: 'test-image.jpg',
-                contentType: 'image/jpeg'
-            });
-            // Intentionally not adding timestamp
-
-            const invalidUploadResponse = await uploadFile(`/api/${TEST_ORG}/${TEST_TRAIL}/upload`, formData);
-
-            logTest(
-                'POST upload without timestamp (should fail)',
-                !invalidUploadResponse.ok && invalidUploadResponse.status === 400,
-                'Correctly rejected upload without timestamp',
-                invalidUploadResponse.data
-            );
-        } catch (error) {
-            logTest(
-                'POST upload without timestamp (should fail)',
-                false,
-                `Error: ${error.message}`
-            );
-        }
-    } else {
-        console.log(`  ${colors.yellow}⊘ SKIP${colors.reset} Upload validation test (no test image)`);
-        results.skipped++;
-    }
-
-    // Test 8: Generate timelapse
-    console.log(`\n${colors.yellow}Test Group: Timelapse Generation${colors.reset}`);
-    console.log(`  ${colors.yellow}⊘ SKIP${colors.reset} Timelapse tests (requires images in Drive)`);
-    console.log(`  ${colors.cyan}Note: To test timelapse, manually POST to:${colors.reset}`);
-    console.log(`  ${colors.cyan}${BASE_URL}/api/${TEST_ORG}/generate-timelapse${colors.reset}`);
-    console.log(`  ${colors.cyan}Body: { "trailNames": ["${TEST_TRAIL}"] }${colors.reset}`);
-    results.skipped += 2;
-
-    // Test 9: 404 endpoint
-    console.log(`\n${colors.yellow}Test Group: Error Handling${colors.reset}`);
-    const notFoundResponse = await makeRequest('GET', '/api/nonexistent');
+    const isValidThumbnail = thumbnailResponse.ok && 
+                            thumbnailResponse.contentType?.includes('image/') &&
+                            thumbnailResponse.data instanceof ArrayBuffer &&
+                            thumbnailResponse.data.byteLength > 0;
+    
     logTest(
-        'GET /api/nonexistent (should 404)',
+        `GET /api/${TEST_ORG}/${TEST_TRAIL}/thumbnail/:fileId`,
+        isValidThumbnail,
+        isValidThumbnail 
+            ? `Thumbnail generated (${thumbnailResponse.data.byteLength} bytes)` 
+            : 'Failed to generate thumbnail',
+        isValidThumbnail ? null : thumbnailResponse.data
+    );
+
+    // Test: Get thumbnail with custom size
+    const customSizeResponse = await makeRequest(
+        'GET',
+        `/api/${TEST_ORG}/${TEST_TRAIL}/thumbnail/${results.uploadedFileId}?size=512`
+    );
+    
+    const isValidCustomThumbnail = customSizeResponse.ok && 
+                                   customSizeResponse.contentType?.includes('image/') &&
+                                   customSizeResponse.data instanceof ArrayBuffer &&
+                                   customSizeResponse.data.byteLength > 0;
+    
+    logTest(
+        `GET thumbnail with size=512`,
+        isValidCustomThumbnail,
+        isValidCustomThumbnail 
+            ? `Custom thumbnail generated (${customSizeResponse.data.byteLength} bytes)` 
+            : 'Failed to generate custom size thumbnail',
+        isValidCustomThumbnail ? null : customSizeResponse.data
+    );
+
+    // Test: Invalid file ID
+    const invalidThumbnailResponse = await makeRequest(
+        'GET',
+        `/api/${TEST_ORG}/${TEST_TRAIL}/thumbnail/invalid-file-id-12345`
+    );
+    
+    logTest(
+        'GET thumbnail with invalid file ID',
+        !invalidThumbnailResponse.ok && invalidThumbnailResponse.status === 404,
+        'Correctly rejected invalid file ID',
+        invalidThumbnailResponse.data
+    );
+
+    // Test: Very small size
+    const smallSizeResponse = await makeRequest(
+        'GET',
+        `/api/${TEST_ORG}/${TEST_TRAIL}/thumbnail/${results.uploadedFileId}?size=64`
+    );
+    
+    const isValidSmallThumbnail = smallSizeResponse.ok && 
+                                  smallSizeResponse.contentType?.includes('image/') &&
+                                  smallSizeResponse.data instanceof ArrayBuffer &&
+                                  smallSizeResponse.data.byteLength > 0;
+    
+    logTest(
+        `GET thumbnail with size=64`,
+        isValidSmallThumbnail,
+        isValidSmallThumbnail 
+            ? `Small thumbnail generated (${smallSizeResponse.data.byteLength} bytes)` 
+            : 'Failed to generate small thumbnail',
+        isValidSmallThumbnail ? null : smallSizeResponse.data
+    );
+
+    // Test: Large size
+    const largeSizeResponse = await makeRequest(
+        'GET',
+        `/api/${TEST_ORG}/${TEST_TRAIL}/thumbnail/${results.uploadedFileId}?size=1024`
+    );
+    
+    const isValidLargeThumbnail = largeSizeResponse.ok && 
+                                  largeSizeResponse.contentType?.includes('image/') &&
+                                  largeSizeResponse.data instanceof ArrayBuffer &&
+                                  largeSizeResponse.data.byteLength > 0;
+    
+    logTest(
+        `GET thumbnail with size=1024`,
+        isValidLargeThumbnail,
+        isValidLargeThumbnail 
+            ? `Large thumbnail generated (${largeSizeResponse.data.byteLength} bytes)` 
+            : 'Failed to generate large thumbnail',
+        isValidLargeThumbnail ? null : largeSizeResponse.data
+    );
+}
+
+async function testTimelapse() {
+    logGroup('Timelapse Generation');
+
+    logSkip(
+        `POST /api/${TEST_ORG}/generate-timelapse`,
+        'Requires multiple images in Google Drive'
+    );
+    
+    console.log(`        ${colors.cyan}To test manually:${colors.reset}`);
+    console.log(`        ${colors.cyan}curl -X POST ${BASE_URL}/api/${TEST_ORG}/generate-timelapse \\${colors.reset}`);
+    console.log(`        ${colors.cyan}     -H "Content-Type: application/json" \\${colors.reset}`);
+    console.log(`        ${colors.cyan}     -d '{"trailNames": ["${TEST_TRAIL}"]}'${colors.reset}`);
+}
+
+async function testErrorHandling() {
+    logGroup('Error Handling');
+
+    // Test: 404 endpoint
+    const notFoundResponse = await makeRequest('GET', '/api/nonexistent-endpoint-12345');
+    logTest(
+        'GET /api/nonexistent-endpoint-12345',
         notFoundResponse.status === 404,
         'Correctly returned 404 for invalid endpoint',
         notFoundResponse.data
     );
 
-    // Test 10: Rate limiting (optional - makes many requests)
-    console.log(`  ${colors.yellow}⊘ SKIP${colors.reset} Rate limiting test (requires 100+ requests)`);
-    results.skipped++;
+    // Test: Invalid trail name
+    const invalidTrailResponse = await makeRequest('GET', `/api/${TEST_ORG}/invalid-trail-12345`);
+    logTest(
+        `GET /api/${TEST_ORG}/invalid-trail-12345`,
+        !invalidTrailResponse.ok && (invalidTrailResponse.status === 400 || invalidTrailResponse.status === 404),
+        'Correctly rejected invalid trail name',
+        invalidTrailResponse.data
+    );
+}
 
-    // Print summary
+async function testRateLimiting() {
+    logGroup('Rate Limiting');
+    
+    logSkip(
+        'Rate limiting test',
+        'Requires 100+ requests (run manually if needed)'
+    );
+}
+
+// ============================================================================
+// MAIN TEST RUNNER
+// ============================================================================
+
+async function runTests() {
+    console.log(`\n${colors.blue}${'═'.repeat(60)}${colors.reset}`);
+    console.log(`${colors.blue}  StewardView API Endpoint Tests${colors.reset}`);
+    console.log(`${colors.blue}${'═'.repeat(60)}${colors.reset}\n`);
+    console.log(`Testing API at: ${colors.cyan}${BASE_URL}${colors.reset}`);
+    console.log(`Organization: ${colors.cyan}${TEST_ORG}${colors.reset}`);
+    console.log(`Trail: ${colors.cyan}${TEST_TRAIL}${colors.reset}`);
+
+    await testBasicConnectivity();
+    await testOrganizations();
+    await testTrails();
+    await testPhotoUpload();
+    await testThumbnails();
+    await testTimelapse();
+    await testErrorHandling();
+    await testRateLimiting();
+
     printSummary();
 }
 
-/**
- * Print test summary
- */
 function printSummary() {
-    console.log(`\n${colors.blue}${'='.repeat(60)}${colors.reset}`);
+    console.log(`\n${colors.blue}${'═'.repeat(60)}${colors.reset}`);
     console.log(`${colors.blue}  Test Summary${colors.reset}`);
-    console.log(`${colors.blue}${'='.repeat(60)}${colors.reset}\n`);
+    console.log(`${colors.blue}${'═'.repeat(60)}${colors.reset}\n`);
     
     const total = results.passed + results.failed + results.skipped;
-    console.log(`  Total Tests: ${total}`);
-    console.log(`  ${colors.green}Passed: ${results.passed}${colors.reset}`);
-    console.log(`  ${colors.red}Failed: ${results.failed}${colors.reset}`);
-    console.log(`  ${colors.yellow}Skipped: ${results.skipped}${colors.reset}`);
+    console.log(`  Total Tests:   ${total}`);
+    console.log(`  ${colors.green}Passed:        ${results.passed}${colors.reset}`);
+    console.log(`  ${colors.red}Failed:        ${results.failed}${colors.reset}`);
+    console.log(`  ${colors.yellow}Skipped:       ${results.skipped}${colors.reset}`);
     
-    const passRate = total > 0 ? ((results.passed / (results.passed + results.failed)) * 100).toFixed(1) : 0;
-    console.log(`  Pass Rate: ${passRate}%\n`);
+    const totalRun = results.passed + results.failed;
+    const passRate = totalRun > 0 ? ((results.passed / totalRun) * 100).toFixed(1) : 0;
+    console.log(`\n  Pass Rate:     ${passRate}%\n`);
 
     if (results.failed > 0) {
         console.log(`${colors.red}Some tests failed. Check the output above for details.${colors.reset}\n`);
@@ -349,11 +530,12 @@ function printSummary() {
     }
 }
 
-/**
- * Main execution
- */
+// ============================================================================
+// ENTRY POINT
+// ============================================================================
+
 async function main() {
-    console.log(`${colors.cyan}Checking for form-data package...${colors.reset}`);
+    console.log(`${colors.cyan}Checking dependencies...${colors.reset}`);
     
     try {
         await import('form-data');
