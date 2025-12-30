@@ -6,13 +6,13 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 
-//load config  
+// Load config
 const config = require('./config/config');
 
-//services
+// Services
 const driveService = require('./services/driveService');
 
-//middleware
+// Middleware
 const {
     requestLogger,
     rateLimiter,
@@ -20,25 +20,31 @@ const {
     notFoundHandler,
 } = require('./middleware');
 
-//routes
+// Routes
 const apiRoutes = require('./routes/api');
 
-//initialize express app
+// Initialize Express app
 const app = express();
 
-//middleware setup
+// ============================================================================
+// MIDDLEWARE SETUP
+// ============================================================================
+
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
 app.use(compression());
 
 app.use(cors({
     origin: (origin, callback) => {
-        //allow requests with no origin
+        // Allow requests with no origin (mobile apps, curl, etc.)
         if (!origin) return callback(null, true);
 
-        if (config.allowedOrigins.includes(origin) || config.allowedOrigins.includes('*')) {
+        const isAllowed = config.allowedOrigins.includes(origin) || 
+                         config.allowedOrigins.includes('*');
+        
+        if (isAllowed) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -48,156 +54,190 @@ app.use(cors({
     credentials: true,
 }));
 
-//body parser
-app.use(express.json({ limit : '10mb' }));
+// Body parser
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-//logging
+// Logging
 if (config.nodeEnv === 'development') {
     app.use(morgan('dev'));
 }
 app.use(requestLogger);
 
-//rate limiting
+// Rate limiting
 app.use('/api/', rateLimiter);
 
-//api routes
+// API routes
 app.use('/api', apiRoutes);
 
-//root endpoint
+// ============================================================================
+// ROOT ENDPOINT
+// ============================================================================
+
 app.get('/', (req, res) => {
-  res.json({
-    service: 'StewardView API',
-    version: '1.0.0',
-    description: 'Open-source trail monitoring for land trusts and stewardship organizations',
-    tagline: 'Eyes on the Land',
-    endpoints: {
-        health: 'GET /api/health',
-        organizations: 'GET /api/organizations',
-        trails: 'GET /api/:orgName/trails',
-        uploadPhoto: 'POST /api/:orgName/:trail/upload',
-        generateTimelapse: 'POST /api/:orgName/generate-timelapse',
-        generateTrailTimelapse: 'POST /api/:orgName/:trail/generate-timelapse',
-    },
-    docs: 'https://github.com/stewardview/stewardview',
-  });
+    res.json({
+        service: 'StewardView API',
+        version: '1.0.0',
+        description: 'Open-source trail monitoring for land trusts and stewardship organizations',
+        tagline: 'Eyes on the Land',
+        endpoints: {
+            health: 'GET /api/health',
+            organizations: 'GET /api/organizations',
+            trails: 'GET /api/:orgName/trails',
+            trailPhotos: 'GET /api/:orgName/:trailName',
+            thumbnail: 'GET /api/:orgName/:trailName/thumbnail/:fileId',
+            uploadPhoto: 'POST /api/:orgName/:trailName/upload',
+            generateTimelapse: 'POST /api/:orgName/generate-timelapse',
+        },
+        docs: 'https://github.com/stewardview/stewardview',
+    });
 });
 
-//error handling
-
+// Error handling
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-//server initialization
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+const createRequiredDirectories = () => {
+    const dirs = [config.uploadDir, config.tempDir];
+    
+    dirs.forEach(dir => {
+        const dirPath = path.join(process.cwd(), dir);
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+            console.log(`Created directory: ${dir}`);
+        }
+    });
+};
+
+const cleanupDirectory = (dirPath) => {
+    if (!fs.existsSync(dirPath)) return;
+
+    const files = fs.readdirSync(dirPath);
+    files.forEach(file => {
+        try {
+            fs.unlinkSync(path.join(dirPath, file));
+        } catch (err) {
+            console.error(`Failed to delete ${file}:`, err.message);
+        }
+    });
+};
+
+const cleanupTempDirectories = () => {
+    const dirs = [config.uploadDir, config.tempDir];
+    dirs.forEach(dir => {
+        const dirPath = path.join(process.cwd(), dir);
+        cleanupDirectory(dirPath);
+    });
+};
+
+const logServerInfo = () => {
+    console.log('');
+    console.log('StewardView API is running!');
+    console.log(`Server: http://localhost:${config.port}`);
+    console.log(`Environment: ${config.nodeEnv}`);
+    console.log(`Health check: http://localhost:${config.port}/api/health`);
+    console.log('');
+    console.log('Available endpoints:');
+    console.log('  GET  /                                        - API information');
+    console.log('  GET  /api/health                              - Service status');
+    console.log('  GET  /api/organizations                       - List all organizations');
+    console.log('  GET  /api/:orgName/trails                     - List trails');
+    console.log('  GET  /api/:orgName/:trailName                 - Get trail photos');
+    console.log('  GET  /api/:orgName/:trailName/thumbnail/:id   - Get thumbnail');
+    console.log('  POST /api/:orgName/:trailName/upload          - Upload photo');
+    console.log('  POST /api/:orgName/generate-timelapse         - Create timelapse');
+    console.log('');
+    console.log('CORS Origins:', config.allowedOrigins.join(', '));
+    console.log('Rate Limit:', `${config.rateLimitMaxRequests} requests per ${config.rateLimitWindowMs / 60000} minutes`);
+    console.log('Max Upload Size:', `${config.maxFileSizeMB}MB`);
+    console.log('');
+    console.log('Press Ctrl+C to stop');
+    console.log('');
+};
+
+const logStartupError = (error) => {
+    console.error('');
+    console.error('Failed to start StewardView API');
+    console.error('Error:', error.message);
+    console.error('');
+    console.error('Please check:');
+    console.error('  1. credentials.json file exists in the correct location');
+    console.error('  2. Google Drive API is enabled in Google Cloud Console');
+    console.error('  3. Service account has proper permissions');
+    console.error('  4. Environment variables are set correctly');
+    console.error('');
+};
+
+// ============================================================================
+// SERVER INITIALIZATION
+// ============================================================================
 
 async function startServer() {
     try {
         console.log('');
         console.log('Starting StewardView API Server...');
         console.log('Eyes on the Land');
-        console.log('-----------------------');
+        console.log('─────────────────────────────────');
 
-        //create required directories
-        const dirs = [config.uploadDir, config.tempDir];
-        dirs.forEach(dir => {
-            const dirPath = path.join(process.cwd(), dir);
-            if (!fs.existsSync(dirPath)) {
-                fs.mkdirSync(dirPath, { recursive: true });
-                console.log(`📁 Created directory: ${dir}`);
-            }
-        });
+        createRequiredDirectories();
 
-        //initialize Google Drive service
+        // Initialize Google Drive service
         await driveService.initialize();
 
         // Start server
         app.listen(config.port, () => {
-        console.log('');
-        console.log('StewardView API is running!');
-        console.log(`Server: http://localhost:${config.port}`);
-        console.log(`Environment: ${config.nodeEnv}`);
-        console.log(`Health check: http://localhost:${config.port}/api/health`);
-        console.log('');
-        console.log('Available endpoints:');
-        console.log('  GET  /              - API information');
-        console.log('  GET  /api/health    - Service status');
-
-        console.log('  GET  /api/organizations   - List all organizations');
-        console.log('  GET  /api/:orgName/trails   - List trails');
-
-        console.log('  POST /api/:orgName/:trailName/upload - Upload photo');
-
-        console.log('  POST /api/:orgName/generate-timelapse - Create organization timelapse');
-        console.log('  POST /api/:orgName/:trailName/generate-timelapse - Create trail timelapse');
-
-        console.log('');
-        console.log('CORS Origins:', config.allowedOrigins.join(', '));
-        console.log('Rate Limit:', `${config.rateLimitMaxRequests} requests per ${config.rateLimitWindowMs / 60000} minutes`);
-        console.log('Max Upload Size:', `${config.maxFileSizeMB}MB`);
-        console.log('');
-        console.log('Press Ctrl+C to stop');
-        console.log('');
+            logServerInfo();
         });
     } catch (error) {
-        console.error('');
-        console.error('Failed to start StewardView API');
-        console.error('Error:', error.message);
-        console.error('');
-        console.error('Please check:');
-        console.error('  1. credentials.json file exists in the correct location');
-        console.error('  2. Google Drive API is enabled in Google Cloud Console');
-        console.error('  3. Service account has proper permissions');
-        console.error('  4. Environment variables are set correctly');
-        console.error('');
+        logStartupError(error);
         process.exit(1);
     }
 }
 
-//shutdown
-function gracefulShutdown(signal) {
-  console.log('');
-  console.log(`${signal} received. Shutting down gracefully...`);
-  
-  // Clean up temporary directories
-  const dirs = [config.uploadDir, config.tempDir];
-  dirs.forEach(dir => {
-    const dirPath = path.join(process.cwd(), dir);
-    if (fs.existsSync(dirPath)) {
-      const files = fs.readdirSync(dirPath);
-      files.forEach(file => {
-        try {
-          fs.unlinkSync(path.join(dirPath, file));
-        } catch (err) {
-          console.error(`Failed to delete ${file}:`, err.message);
-        }
-      });
-    }
-  });
+// ============================================================================
+// GRACEFUL SHUTDOWN
+// ============================================================================
 
-  console.log('Cleanup complete');
-  console.log('Goodbye!');
-  console.log('');
-  process.exit(0);
+function gracefulShutdown(signal) {
+    console.log('');
+    console.log(`${signal} received. Shutting down gracefully...`);
+    
+    cleanupTempDirectories();
+
+    console.log('Cleanup complete');
+    console.log('Goodbye!');
+    console.log('');
+    process.exit(0);
 }
+
+// ============================================================================
+// PROCESS EVENT HANDLERS
+// ============================================================================
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Handle uncaught errors
 process.on('uncaughtException', (error) => {
-  console.error('');
-  console.error('Uncaught Exception:', error);
-  console.error('');
-  process.exit(1);
+    console.error('');
+    console.error('Uncaught Exception:', error);
+    console.error('');
+    process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('');
-  console.error('Unhandled Rejection at:', promise);
-  console.error('Reason:', reason);
-  console.error('');
-  process.exit(1);
+    console.error('');
+    console.error('Unhandled Rejection at:', promise);
+    console.error('Reason:', reason);
+    console.error('');
+    process.exit(1);
 });
 
-//start the server
+// ============================================================================
+// START THE SERVER
+// ============================================================================
+
 startServer();
