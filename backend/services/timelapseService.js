@@ -6,10 +6,10 @@ const config = require('../config/config');
 const driveService = require('./driveService');
 
 class TimelapseService {
+ 
     /**
      * Create timelapse GIF from images stored in Google Drive
      */
-
     async createGif(imagePaths, outputPath) {
         try {
             if (imagePaths.length === 0) {
@@ -68,7 +68,6 @@ class TimelapseService {
     /**
      * Generate timelapse from trails for a specific organization and trail
      */
-
     async generateTimeLapse(orgSlug, trailNames) {
         const tempDir = path.join(process.cwd(), config.tempDir);
         const allImages = [];
@@ -125,7 +124,6 @@ class TimelapseService {
     /**
      * Cleanup temporary files
      */
-
     cleanup(imagePaths, outputPath) {
         console.log('Cleaning up temporary files...');
 

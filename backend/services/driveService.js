@@ -21,7 +21,6 @@ class DriveService {
      * Initialize Google Drive client with OAuth2
      * @returns {Promise<boolean>}
      */
-
     async initialize() {
         try {
             const authClient = await oauth2Service.getClient(SCOPES);
@@ -40,7 +39,6 @@ class DriveService {
      * @return string
      * Replaces invalid characters with underscores
      */
-
     sanitizeName(name) {
         return name.replace(/[^a-zA-Z0-9-_ ]/g, '_');
     }
@@ -49,7 +47,6 @@ class DriveService {
      * Get organization folder
      * Structure: root/orgSlug
      */
-
     async getOrgFolder(orgSlug) {
         // Get organization config
         const { getOrganization } = require('../config/organizations');
@@ -73,7 +70,6 @@ class DriveService {
      * Get trail folder
      * Structure: root/orgSlug/trailName
      */
-
     async getOrCreateTrailFolder(orgSlug, trailName) {
         const safeTrailName = this.sanitizeName(trailName);
         const cacheKey = `${orgSlug}/${safeTrailName}`;
@@ -131,7 +127,6 @@ class DriveService {
      * @return uploaded file metadata
      * @throws error on failure
      */
-
     async uploadFile(orgSlug, trailName, filePath, filename, mimeType, description) {
         try {
             //get or create trail folder
@@ -189,7 +184,6 @@ class DriveService {
      * @return array of files
      * @throws error on failure
      */
-
     async listFilesInTrail(orgSlug, trailName, orderBy = 'name') {
         try {
             const trailFolderId = await this.getOrCreateTrailFolder(orgSlug, trailName);
@@ -210,7 +204,6 @@ class DriveService {
      * @return void
      * @throws error on failure
      */
-
     async downloadFile(fileId, destinationPath) {
         try {
             const dest = fs.createWriteStream(destinationPath);
@@ -290,7 +283,6 @@ class DriveService {
     /**
      * Clear caches
      */
-
     clearCache() {
         this.orgFolderCache.clear();
         this.trailFolderCache.clear();
