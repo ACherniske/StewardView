@@ -270,26 +270,8 @@ export async function getOrganizations() {
     }
 }
 
-/**
- * Get organization statistics
- * @param {string} orgName - Organization name
- * @returns {Promise<Object|null>} Organization stats or null
- */
-export async function getOrganizationStats(orgName) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/${orgName}/stats`);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch organization stats: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.stats || null;
-    } catch (error) {
-        console.error('Error fetching organization stats:', error);
-        return null;
-    }
-}
+// Note: Organization stats endpoint does not exist in backend
+// If needed, statistics can be computed client-side from trails data
 
 // ============================================================================
 // TRAIL OPERATIONS
@@ -320,7 +302,7 @@ export async function getTrails(orgName) {
  * Get specific trail information
  * @param {string} orgName - Organization name
  * @param {string} trailName - Trail name
- * @returns {Promise<Object|null>} Trail info or null
+ * @returns {Promise<Object|null>} Trail info with photo count
  */
 export async function getTrailInfo(orgName, trailName) {
     try {
@@ -331,11 +313,11 @@ export async function getTrailInfo(orgName, trailName) {
         }
 
         const data = await response.json();
+        // Backend returns { files: [...] }
         return {
-            name: data.trail,
-            organization: data.organization,
-            stats: data.stats,
-            folderId: data.folderId
+            name: trailName,
+            photoCount: data.files?.length || 0,
+            photos: data.files || []
         };
     } catch (error) {
         console.error('Error fetching trail info:', error);
@@ -365,7 +347,8 @@ export async function getTrailPhotos(orgName, trailName) {
             name: file.name,
             url: file.webViewLink,
             downloadUrl: file.webContentLink,
-            thumbnail: file.thumbnailLink || file.webViewLink,
+            // Use backend thumbnail endpoint for optimized thumbnails
+            thumbnail: `${API_BASE_URL}/${orgName}/${trailName}/thumbnail/${file.id}?size=256`,
             createdTime: file.createdTime,
             size: file.size,
             // Parse timestamp from filename if possible
@@ -554,7 +537,8 @@ export async function validateOrganization(orgName) {
 export async function validateTrail(orgName, trailName) {
     try {
         const trails = await getTrails(orgName);
-        return trails.some(trail => trail.name === trailName);
+        // Backend returns array of trail names (strings)
+        return trails.includes(trailName);
     } catch (error) {
         console.error('Error validating trail:', error);
         return false;
