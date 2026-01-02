@@ -193,7 +193,7 @@ const TrailPage = () => {
                         onClick={() => setActiveView('gallery')}
                     >
                         <ImageIcon size={20} />
-                        Photo Gallery
+                        Gallery
                         {images.length > 0 && <span className="badge">{images.length}</span>}
                     </button>
                 </div>
