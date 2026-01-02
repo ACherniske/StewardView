@@ -101,14 +101,21 @@ class TimelapseService {
                 try {
                     const files = await driveService.listFilesInTrail(orgSlug, trailName, 'createdTime');
 
-                    if (files.length === 0) {
+                    // Filter out the cached timelapse GIF and non-image files
+                    const imageFiles = files.filter(file => 
+                        file.mimeType && 
+                        file.mimeType.startsWith('image/') && 
+                        file.name !== '_timelapse.gif'
+                    );
+
+                    if (imageFiles.length === 0) {
                         console.log(`No images found in trail '${trailName}'`);
                         continue;
                     }
 
-                    console.log(`Downloading ${files.length} images from trail '${trailName}'`);
+                    console.log(`Downloading ${imageFiles.length} images from trail '${trailName}'`);
 
-                    for (const file of files) {
+                    for (const file of imageFiles) {
                         try {
                             const destPath = path.join(tempDir, `${orgSlug}_${trailName}_${file.id}.jpg`);
                             await driveService.downloadFile(file.id, destPath);
@@ -153,6 +160,94 @@ class TimelapseService {
             const allImages = imageMetadata.map(img => img.path);
             this.cleanup(allImages, outputPath);
             throw error;
+        }
+    }
+
+    /**
+     * Generate and store timelapse for a trail (called after photo upload)
+     * Returns true if successful, false otherwise
+     */
+    async regenerateAndStore(orgSlug, trailName) {
+        const tempDir = path.join(process.cwd(), config.tempDir);
+        const imageMetadata = [];
+        let outputPath = null;
+
+        try {
+            // Create temp dir if needed
+            if (!fsSync.existsSync(tempDir)) {
+                fsSync.mkdirSync(tempDir, { recursive: true });
+            }
+
+            console.log(`Regenerating timelapse for trail '${trailName}' in organization '${orgSlug}'`);
+
+            // Step 1: Delete the old GIF if it exists
+            const existingGif = await driveService.getTimelapseGif(orgSlug, trailName);
+            if (existingGif) {
+                console.log(`Deleting old timelapse GIF: ${existingGif.id}`);
+                await driveService.deleteFile(existingGif.id);
+            }
+
+            // Step 2: Get all image files from the trail
+            const files = await driveService.listFilesInTrail(orgSlug, trailName, 'createdTime');
+
+            // Filter to only include image files (GIF should already be deleted, but filter just in case)
+            const imageFiles = files.filter(file => 
+                file.mimeType && 
+                file.mimeType.startsWith('image/') && 
+                file.name !== '_timelapse.gif'
+            );
+
+            if (imageFiles.length === 0) {
+                console.log(`No images found in trail '${trailName}', skipping timelapse generation`);
+                return false;
+            }
+
+            console.log(`Downloading ${imageFiles.length} images from trail '${trailName}'`);
+
+            // Download all images
+            for (const file of imageFiles) {
+                try {
+                    const destPath = path.join(tempDir, `${orgSlug}_${trailName}_${file.id}.jpg`);
+                    await driveService.downloadFile(file.id, destPath);
+                    
+                    imageMetadata.push({
+                        path: destPath,
+                        createdTime: new Date(file.createdTime).getTime()
+                    });
+                } catch (err) {
+                    console.error(`Error downloading file ${file.id}:`, err.message);
+                }
+            }
+
+            if (imageMetadata.length === 0) {
+                console.log('No images successfully downloaded, skipping timelapse generation');
+                return false;
+            }
+
+            // Step 3: Sort by creation time and generate new GIF
+            imageMetadata.sort((a, b) => a.createdTime - b.createdTime);
+            const allImages = imageMetadata.map(img => img.path);
+
+            outputPath = path.join(tempDir, `${orgSlug}_${trailName}_timelapse.gif`);
+            await this.createGif(allImages, outputPath);
+
+            // Step 4: Upload new GIF to Google Drive
+            await driveService.uploadTimelapseGif(orgSlug, trailName, outputPath);
+
+            console.log(`Timelapse GIF successfully generated and stored for trail '${trailName}'`);
+
+            // Cleanup temp files
+            this.cleanup(allImages, outputPath);
+
+            return true;
+        } catch (error) {
+            console.error(`Error regenerating timelapse for trail '${trailName}':`, error.message);
+            
+            // Cleanup on error
+            const allImages = imageMetadata.map(img => img.path);
+            this.cleanup(allImages, outputPath);
+            
+            return false;
         }
     }
 
