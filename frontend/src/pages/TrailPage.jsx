@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ImageIcon, Film } from 'lucide-react';
 import PlantBackground from '../components/PlantBackground';
@@ -15,6 +15,7 @@ const TrailPage = () => {
     const [gifLoading, setGifLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [activeView, setActiveView] = useState('timelapse'); // 'timelapse' or 'gallery'
+    const timelapseRequestRef = useRef(null);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -61,8 +62,16 @@ const TrailPage = () => {
     };
 
     const generateTimelapse = async () => {
+        // Prevent duplicate requests
+        const requestKey = `${orgName}-${trailName}`;
+        if (timelapseRequestRef.current === requestKey) {
+            console.log('Timelapse generation already in progress, skipping duplicate request');
+            return;
+        }
+
         try {
             setGifLoading(true);
+            timelapseRequestRef.current = requestKey;
             
             console.log('Generating timelapse for:', orgName, trailName);
 
@@ -93,6 +102,7 @@ const TrailPage = () => {
             // The page should still show photos even if timelapse fails
         } finally {
             setGifLoading(false);
+            timelapseRequestRef.current = null;
         }
     };
 
