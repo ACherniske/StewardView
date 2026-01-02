@@ -12,6 +12,7 @@ const TrailPage = () => {
     const [error, setError] = useState(null);
     const [gifLoading, setGifLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [activeView, setActiveView] = useState('timelapse'); // 'timelapse' or 'gallery'
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -178,7 +179,27 @@ const TrailPage = () => {
                     <p className="organization-name">{formatTrailName(orgName)}</p>
                 </header>
 
+                {/* View Toggle Buttons */}
+                <div className="view-toggle">
+                    <button 
+                        className={`toggle-btn ${activeView === 'timelapse' ? 'active' : ''}`}
+                        onClick={() => setActiveView('timelapse')}
+                    >
+                        <Film size={20} />
+                        Timelapse
+                    </button>
+                    <button 
+                        className={`toggle-btn ${activeView === 'gallery' ? 'active' : ''}`}
+                        onClick={() => setActiveView('gallery')}
+                    >
+                        <ImageIcon size={20} />
+                        Photo Gallery
+                        {images.length > 0 && <span className="badge">{images.length}</span>}
+                    </button>
+                </div>
+
                 {/* Timelapse Section */}
+                {activeView === 'timelapse' && (
                 <section className="timelapse-section">
                     <div className="section-header">
                         <Film size={24} />
@@ -209,8 +230,10 @@ const TrailPage = () => {
                         </div>
                     )}
                 </section>
+                )}
 
                 {/* Photo Gallery Section */}
+                {activeView === 'gallery' && (
                 <section className="gallery-section">
                     <div className="section-header">
                         <ImageIcon size={24} />
@@ -251,6 +274,7 @@ const TrailPage = () => {
                         )}
                     </div>
                 </section>
+                )}
             </div>
 
             {/* Image Modal */}
