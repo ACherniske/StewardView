@@ -1,4 +1,4 @@
-import '../styles/ImageModal.css';
+import '../styles/modals/ImageModal.css';
 
 const ImageModal = ({ 
     image, 

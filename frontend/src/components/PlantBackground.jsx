@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import '../styles/PlantBackground.css';
+import '../styles/pages/PlantBackground.css';
 
 function PlantBackground() {
   const canvasRef = useRef(null);

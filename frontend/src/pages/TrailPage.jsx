@@ -5,7 +5,7 @@ import PlantBackground from '../components/PlantBackground';
 import TimelapseViewer from '../components/TimelapseViewer';
 import PhotoGallery from '../components/PhotoGallery';
 import ImageModal from '../components/ImageModal';
-import '../styles/TrailPage.css';
+import '../styles/pages/TrailPage.css';
 
 const TrailPage = () => {
     const { orgName, trailName } = useParams();
