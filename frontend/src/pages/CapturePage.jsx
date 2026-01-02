@@ -32,6 +32,7 @@ function CapturePage() {
   };
 
   const displayTrailName = formatTrailName(trailName);
+  const displayOrgName = formatTrailName(orgName);
 
   const handleUploadStart = () => {
     setUploadFeedback({
@@ -82,6 +83,7 @@ function CapturePage() {
           Back to Trail
         </Link>
         <h1 className="trail-capture-title">{displayTrailName}</h1>
+        <p className="organization-name">{displayOrgName}</p>
         <div className="trail-capture-card-area">
           {deviceInfo.isMobile ? (
             <div className="capture-card">
