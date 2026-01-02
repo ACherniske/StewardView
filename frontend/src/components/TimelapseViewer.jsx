@@ -4,7 +4,6 @@ const TimelapseViewer = ({ gifUrl, gifLoading, imagesCount, onRetry }) => {
     return (
         <section className="timelapse-section">
             <div className="section-header">
-                <Film size={24} />
                 <h2>Trail Timelapse</h2>
             </div>
             {gifLoading ? (
