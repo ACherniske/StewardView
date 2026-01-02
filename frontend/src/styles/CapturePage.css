@@ -91,7 +91,7 @@ body {
     font-size: 2rem;
     color: #3a5a40;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.5rem 0;
     text-align: center;
     letter-spacing: 0.01em;
 }
