@@ -7,7 +7,7 @@ import UploadModal from '../components/UploadModal';
 import PlantBackground from '../components/PlantBackground';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
-import '../styles/CapturePage.css';
+import '../styles/pages/CapturePage.css';
 
 function CapturePage() {
   // Extract BOTH orgName and trailName from URL params

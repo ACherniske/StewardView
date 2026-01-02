@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { processImageMetadata } from '../services/imageProcessor';
 import { uploadPhoto } from '../services/api';
 import { Camera } from 'lucide-react';
-import '../styles/MobileCamera.css';
+import '../styles/components/MobileCamera.css';
 
 function MobileCamera({ orgName, trailName, onUploadStart, onUploadSuccess, onUploadError }) {
     const [capturedImage, setCapturedImage] = useState(null);

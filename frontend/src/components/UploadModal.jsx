@@ -1,5 +1,5 @@
     import { useEffect } from "react";
-    import '../styles/UploadModal.css';
+    import '../styles/modals/UploadModal.css';
     import { Hourglass, CircleCheck, CircleAlert, RotateCw, Info } from "lucide-react";
 
 

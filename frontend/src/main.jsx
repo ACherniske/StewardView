@@ -2,9 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
-import LandingPage from './pages/LandingPage.jsx';
+// import LandingPage from './pages/LandingPage.jsx';
 import CapturePage from './pages/CapturePage.jsx';
-import OrganizationPage from './pages/OrganizationPage.jsx';
+// import OrganizationPage from './pages/OrganizationPage.jsx';
 import TrailPage from './pages/TrailPage.jsx';
 
 createRoot(document.getElementById('root')).render(
@@ -19,8 +19,8 @@ createRoot(document.getElementById('root')).render(
          */
         }
 
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/:orgName" element={<OrganizationPage />} />
+        {/* <Route path="/" element={<LandingPage />} /> */}
+        {/* <Route path="/:orgName" element={<OrganizationPage />} /> */}
         <Route path="/:orgName/:trailName" element={<TrailPage />} />
         <Route path="/capture/:orgName/:trailName" element={<CapturePage />} />
 
