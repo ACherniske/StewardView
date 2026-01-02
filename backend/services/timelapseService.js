@@ -1,4 +1,5 @@
-const fs = require('fs');
+const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 const GIFEncoder = require('gifencoder');
 const { createCanvas, loadImage } = require('canvas');
@@ -8,104 +9,137 @@ const driveService = require('./driveService');
 class TimelapseService {
  
     /**
-     * Create timelapse GIF from images stored in Google Drive
+     * Create timelapse GIF from images with improved error handling
      */
     async createGif(imagePaths, outputPath) {
-        try {
-            if (imagePaths.length === 0) {
-                throw new Error('No images provided for timelapse creation.');
-            }
-
-            console.log(`Creating timelapse GIF with ${imagePaths.length} images...`);
-
-            
-            //calculate dimensions maintaining aspect ratio
-            const firstImage = await loadImage(imagePaths[0]);
-            const maxWidth = config.timelapseMaxWidth;
-            const width = Math.min(firstImage.width, maxWidth);
-            const height = Math.round((firstImage.height / firstImage.width) * width);
-
-            console.log('Gif dimensions:', width, 'x', height);
-
-            const encoder = new GIFEncoder(width, height);
-            const canvas = createCanvas(width, height);
-            const ctx = canvas.getContext('2d');
-
-            const stream = encoder.createReadStream();
-            stream.pipe(fs.createWriteStream(outputPath));
-
-            encoder.start();
-            encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
-            encoder.setDelay(config.timelapseFrameDelay);  // frame delay in ms
-            encoder.setQuality(config.timelapseQuality); // image quality, 10 is default
-
-            for (let i = 0; i < imagePaths.length; i++) {
-                const image = await loadImage(imagePaths[i]);
-
-                //draw image to canvas
-                ctx.drawImage(image, 0, 0, width, height);
-                encoder.addFrame(ctx);
-
-                //progress logging
-                if ((i + 1) % 10 === 0 || i === imagePaths.length - 1) {
-                    console.log(`Added ${i + 1}/${imagePaths.length} frames to GIF`);
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (imagePaths.length === 0) {
+                    return reject(new Error('No images provided for timelapse creation.'));
                 }
+
+                console.log(`Creating timelapse GIF with ${imagePaths.length} images...`);
+
+                // Load first image to get dimensions
+                const firstImage = await loadImage(imagePaths[0]);
+                const maxWidth = config.timelapseMaxWidth || 800;
+                const width = Math.min(firstImage.width, maxWidth);
+                const height = Math.round((firstImage.height / firstImage.width) * width);
+
+                console.log('GIF dimensions:', width, 'x', height);
+
+                // Setup encoder and canvas
+                const encoder = new GIFEncoder(width, height);
+                const canvas = createCanvas(width, height);
+                const ctx = canvas.getContext('2d');
+
+                // Setup file writing
+                const writeStream = fsSync.createWriteStream(outputPath);
+                encoder.createReadStream().pipe(writeStream);
+
+                // Handle stream events
+                writeStream.on('error', (err) => {
+                    console.error('Write stream error:', err);
+                    reject(err);
+                });
+
+                writeStream.on('finish', () => {
+                    console.log('Timelapse GIF created successfully at:', outputPath);
+                    resolve(outputPath);
+                });
+
+                // Start encoding
+                encoder.start();
+                encoder.setRepeat(0);
+                encoder.setDelay(config.timelapseFrameDelayMs || 500);
+                encoder.setQuality(config.timelapseGifQuality || 10);
+
+                // Add frames
+                for (let i = 0; i < imagePaths.length; i++) {
+                    try {
+                        const image = await loadImage(imagePaths[i]);
+                        ctx.clearRect(0, 0, width, height);
+                        ctx.drawImage(image, 0, 0, width, height);
+                        encoder.addFrame(ctx);
+
+                        if ((i + 1) % 5 === 0 || i === imagePaths.length - 1) {
+                            console.log(`Processed frame ${i + 1}/${imagePaths.length}`);
+                        }
+                    } catch (err) {
+                        console.error(`Error loading image ${imagePaths[i]}:`, err.message);
+                        // Continue with other images
+                    }
+                }
+
+                encoder.finish();
+                console.log('Encoder finished, waiting for file write to complete...');
+
+            } catch (error) {
+                console.error('Error in GIF creation:', error);
+                reject(error);
             }
-
-            encoder.finish();
-
-            //wait for encoder
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            console.log('Timelapse GIF created at:', outputPath);
-            return outputPath;
-        } catch (error) {
-            console.error('Error creating timelapse GIF:', error.message);
-            throw error;
-        }
+        });
     }
 
     /**
-     * Generate timelapse from trails for a specific organization and trail
+     * Generate timelapse from trails for a specific organization
      */
     async generateTimeLapse(orgSlug, trailNames) {
         const tempDir = path.join(process.cwd(), config.tempDir);
-        const allImages = [];
+        const imageMetadata = []; // Store path with creation time
         let outputPath = null;
 
         try {
-            //create temp dir if needed
-            if (!fs.existsSync(tempDir)) {
-                fs.mkdirSync(tempDir, { recursive: true });
+            // Create temp dir if needed
+            if (!fsSync.existsSync(tempDir)) {
+                fsSync.mkdirSync(tempDir, { recursive: true });
             }
 
-            console.log(`Downloading images from ${trailNames.length} trails for organization '${orgSlug}'`);
+            console.log(`Fetching images from ${trailNames.length} trail(s) for organization '${orgSlug}'`);
 
             for (const trailName of trailNames) {
-                const folderID = await driveService.getOrCreateTrailFolder(orgSlug, trailName);
-                const files = await driveService.listFilesInTrail(orgSlug, trailName, 'createdTime');
+                try {
+                    const files = await driveService.listFilesInTrail(orgSlug, trailName, 'createdTime');
 
-                if (files.length === 0) {
-                    console.log(`No images found in trail '${trailName}'`);
-                    continue;
-                }
+                    if (files.length === 0) {
+                        console.log(`No images found in trail '${trailName}'`);
+                        continue;
+                    }
 
-                console.log(`Downloading ${files.length} images from trail '${trailName}'`);
+                    console.log(`Downloading ${files.length} images from trail '${trailName}'`);
 
-                for (const file of files) {
-                    const destPath = path.join(tempDir, `${orgSlug}_${Date.now()}_${file.name}`);
-                    await driveService.downloadFile(file.id, destPath);
-                    allImages.push(destPath);
+                    for (const file of files) {
+                        try {
+                            const destPath = path.join(tempDir, `${orgSlug}_${trailName}_${file.id}.jpg`);
+                            await driveService.downloadFile(file.id, destPath);
+                            
+                            // Store path with creation time for proper sorting
+                            imageMetadata.push({
+                                path: destPath,
+                                createdTime: new Date(file.createdTime).getTime()
+                            });
+                        } catch (err) {
+                            console.error(`Error downloading file ${file.id}:`, err.message);
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Error processing trail ${trailName}:`, err.message);
                 }
             }
 
-            if (allImages.length === 0) {
+            if (imageMetadata.length === 0) {
                 throw new Error('No images found in the specified trails.');
             }
 
-            allImages.sort();
+            console.log(`Total images downloaded: ${imageMetadata.length}`);
 
-            //create GIF
+            // Sort by creation time (oldest to newest for chronological timelapse)
+            imageMetadata.sort((a, b) => a.createdTime - b.createdTime);
+            
+            // Extract sorted paths
+            const allImages = imageMetadata.map(img => img.path);
+
+            // Create GIF
             outputPath = path.join(tempDir, `${orgSlug}_timelapse_${Date.now()}.gif`);
             await this.createGif(allImages, outputPath);
 
@@ -115,10 +149,11 @@ class TimelapseService {
                 tempFiles: allImages,
             };
         } catch (error) {
-            //cleanup on error
+            // Cleanup on error
+            const allImages = imageMetadata.map(img => img.path);
             this.cleanup(allImages, outputPath);
             throw error;
-            }
+        }
     }
 
     /**
@@ -129,9 +164,9 @@ class TimelapseService {
 
         if (imagePaths && Array.isArray(imagePaths)) {
             imagePaths.forEach(img => {
-                if (fs.existsSync(img)) {
+                if (fsSync.existsSync(img)) {
                     try {
-                        fs.unlinkSync(img);
+                        fsSync.unlinkSync(img);
                     } catch (err) {
                         console.error(`Error deleting temp image file '${img}':`, err.message);
                     }
@@ -139,9 +174,9 @@ class TimelapseService {
             });
         }
 
-        if (outputPath && fs.existsSync(outputPath)) {
+        if (outputPath && fsSync.existsSync(outputPath)) {
             try {
-                fs.unlinkSync(outputPath);
+                fsSync.unlinkSync(outputPath);
             } catch (err) {
                 console.error(`Error deleting temp output file '${outputPath}':`, err.message);
             }
