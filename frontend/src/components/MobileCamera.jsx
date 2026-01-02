@@ -120,12 +120,6 @@ function MobileCamera({ orgName, trailName, onUploadStart, onUploadSuccess, onUp
               className="mobile-camera-preview-image"
             />
           </div>
-          <div className="mobile-camera-file-info">
-            <p className="mobile-camera-file-name">{capturedImage.name}</p>
-            <p className="mobile-camera-file-size">
-              {(capturedImage.size / 1024 / 1024).toFixed(2)} MB
-            </p>
-          </div>
           <div className="mobile-camera-preview-controls">
             <button className="mobile-camera-btn mobile-camera-btn-secondary" onClick={retakeImage}>
               Retake

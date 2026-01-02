@@ -159,12 +159,6 @@ function FileUpload({ orgName, trailName, onUploadStart, onUploadSuccess, onUplo
               className="preview-image"
             />
           </div>
-          <div className="file-info">
-            <p className="file-name">{selectedFile.name}</p>
-            <p className="file-size">
-              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-            </p>
-          </div>
           <div className="preview-controls">
             <button className="btn btn-secondary" onClick={clearSelection}>
               Remove
