@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Wifi, WifiOff, Smartphone, Monitor, Camera, Upload } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+import { Wifi, WifiOff, Smartphone, Monitor, Camera, Upload, ArrowLeft } from 'lucide-react';
 import MobileCamera from '../components/MobileCamera';
 import FileUpload from '../components/FileUpload';
 import UploadModal from '../components/UploadModal';
 import PlantBackground from '../components/PlantBackground';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
-import '../styles/TrailCapturePage.css';
+import '../styles/CapturePage.css';
 
-function TrailCapturePage() {
+function CapturePage() {
   // Extract BOTH orgName and trailName from URL params
   const { orgName, trailName } = useParams();
   const [activeTab, setActiveTab] = useState('camera');
@@ -77,6 +77,10 @@ function TrailCapturePage() {
       <PlantBackground className="plant-bg-layer" />
       <div className="ui-separator-overlay"></div>
       <div className="trail-capture-container">
+        <Link to={`/${orgName}/${trailName}`} className="capture-back-button">
+          <ArrowLeft size={20} />
+          Back to Trail
+        </Link>
         <h1 className="trail-capture-title">{displayTrailName}</h1>
         <div className="trail-capture-card-area">
           {deviceInfo.isMobile ? (
@@ -150,4 +154,4 @@ function TrailCapturePage() {
   );
 }
 
-export default TrailCapturePage;
+export default CapturePage;
