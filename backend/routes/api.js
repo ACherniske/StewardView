@@ -267,6 +267,20 @@ router.post(
                 `Upload successful: ${driveFile.name} (ID: ${driveFile.id})`
             );
 
+            // Trigger timelapse regeneration in the background (don't wait for it)
+            console.log(`Triggering timelapse regeneration for trail '${trailName}'`);
+            timelapseService.regenerateAndStore(orgSlug, trailName)
+                .then(success => {
+                    if (success) {
+                        console.log(`Background timelapse regeneration completed for '${trailName}'`);
+                    } else {
+                        console.log(`Background timelapse regeneration skipped or failed for '${trailName}'`);
+                    }
+                })
+                .catch(err => {
+                    console.error(`Background timelapse regeneration error for '${trailName}':`, err.message);
+                });
+
             res.json({
                 success: true,
                 message: 'Photo uploaded successfully',
@@ -311,6 +325,44 @@ router.post(
                 : 'ALL';
         console.log(`Generating timelapse for trails: ${trailsDisplay}`);
 
+        // For single trail requests, check if cached GIF exists in Drive
+        if (trailNames && trailNames.length === 1) {
+            const trailName = trailNames[0];
+            
+            try {
+                const existingGif = await driveService.getTimelapseGif(orgSlug, trailName);
+                
+                if (existingGif) {
+                    console.log(`Found cached timelapse GIF for trail '${trailName}', serving from Drive`);
+                    
+                    // Download the GIF and send it
+                    const tempDir = path.join(process.cwd(), config.tempDir);
+                    if (!fsSync.existsSync(tempDir)) {
+                        fsSync.mkdirSync(tempDir, { recursive: true });
+                    }
+                    
+                    const tempGifPath = path.join(tempDir, `${orgSlug}_${trailName}_cached_${Date.now()}.gif`);
+                    await driveService.downloadFile(existingGif.id, tempGifPath);
+                    
+                    res.sendFile(tempGifPath, (err) => {
+                        if (err) {
+                            console.error('Error sending cached timelapse file:', err.message);
+                        }
+                        // Cleanup temp file
+                        deleteFileIfExists(tempGifPath);
+                    });
+                    
+                    return;
+                }
+                
+                console.log(`No cached timelapse found for trail '${trailName}', generating new one`);
+            } catch (error) {
+                console.error(`Error checking for cached timelapse:`, error.message);
+                // Continue to generation if check fails
+            }
+        }
+
+        // Generate new timelapse (for multi-trail or if no cached version exists)
         let result = null;
 
         try {

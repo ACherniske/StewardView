@@ -304,6 +304,84 @@ class DriveService {
     }
 
     /**
+     * Delete a file from Google Drive
+     */
+    async deleteFile(fileId) {
+        try {
+            await this.drive.files.delete({ fileId });
+            console.log(`File deleted from Drive: ${fileId}`);
+            return true;
+        } catch (error) {
+            console.error(`Error deleting file ${fileId}:`, error.message);
+            return false;
+        }
+    }
+
+    /**
+     * Get or create a timelapse GIF file for a trail
+     * Returns the file ID if it exists, null otherwise
+     */
+    async getTimelapseGif(orgSlug, trailName) {
+        try {
+            const trailFolderId = await this.getOrCreateTrailFolder(orgSlug, trailName);
+            const gifName = '_timelapse.gif'; // Prefix with _ to sort to top
+
+            const response = await this.drive.files.list({
+                q: `name='${gifName}' and '${trailFolderId}' in parents and trashed=false`,
+                fields: 'files(id, name, createdTime, modifiedTime)',
+                spaces: 'drive',
+            });
+
+            if (response.data.files.length > 0) {
+                const gifFile = response.data.files[0];
+                console.log(`Found existing timelapse GIF for trail '${trailName}': ${gifFile.id}`);
+                return gifFile;
+            }
+
+            return null;
+        } catch (error) {
+            console.error(`Error checking for timelapse GIF in trail '${trailName}':`, error.message);
+            return null;
+        }
+    }
+
+    /**
+     * Upload timelapse GIF for a trail
+     * Creates a new GIF file (assumes old one has been deleted)
+     */
+    async uploadTimelapseGif(orgSlug, trailName, gifPath) {
+        try {
+            const trailFolderId = await this.getOrCreateTrailFolder(orgSlug, trailName);
+            const gifName = '_timelapse.gif';
+
+            console.log(`Creating new timelapse GIF in trail folder: ${trailFolderId}`);
+            
+            const fileMetadata = {
+                name: gifName,
+                parents: [trailFolderId],
+                description: `Automated timelapse GIF for ${trailName}`,
+            };
+
+            const media = {
+                mimeType: 'image/gif',
+                body: fs.createReadStream(gifPath),
+            };
+
+            const response = await this.drive.files.create({
+                requestBody: fileMetadata,
+                media: media,
+                fields: 'id, name, webViewLink, createdTime',
+            });
+
+            console.log(`Timelapse GIF created successfully: ${response.data.id}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error uploading timelapse GIF for trail '${trailName}':`, error.message);
+            throw error;
+        }
+    }
+
+    /**
      * Clear caches
      */
     clearCache() {
