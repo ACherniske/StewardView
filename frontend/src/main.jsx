@@ -3,8 +3,10 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
-import TrailCapturePage from './pages/TrailCapturePage.jsx';
-import TimelapseViewerPage from './pages/TimelapseViewerPage.jsx';
+import LandingPage from './pages/LandingPage.jsx';
+import CapturePage from './pages/CapturePage.jsx';
+import OrganizationPage from './pages/OrganizationPage.jsx';
+import TrailPage from './pages/TrailPage.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -14,14 +16,14 @@ createRoot(document.getElementById('root')).render(
         /* Home Path 
          * Org Path (optional) (display org-specific info and trail timelapses)
          * Trail Path (view gifs and trail info)
-         * Trail Upload Path (capture/upload photos)
+         * Capture Path (capture/upload photos)
          */
         }
 
-        <Route path="/" element={<App />} />
-        <Route path="/:orgName" element={<App />} />
-        <Route path="/:orgName/:trailName" element={<TimelapseViewerPage />} />
-        <Route path="/:orgName/:trailName/upload" element={<TrailCapturePage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/:orgName" element={<OrganizationPage />} />
+        <Route path="/:orgName/:trailName" element={<TrailPage />} />
+        <Route path="/capture/:orgName/:trailName" element={<CapturePage />} />
 
       </Routes>
     </BrowserRouter>
