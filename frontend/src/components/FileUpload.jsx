@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { processImageMetadata } from '../services/imageProcessor';
 import { uploadPhoto } from '../services/api';
 import { Upload } from 'lucide-react';
-import '../styles/FileUpload.css';
+import '../styles/components/FileUpload.css';
 
 function FileUpload({ orgName, trailName, onUploadStart, onUploadSuccess, onUploadError }) {
     const [selectedFile, setSelectedFile] = useState(null);
