@@ -214,13 +214,36 @@ class DriveService {
             );
 
             return new Promise((resolve, reject) => {
-                response.data
-                    .on('end', () => {
+                let streamEnded = false;
+                let writeFinished = false;
+
+                const checkComplete = () => {
+                    if (streamEnded && writeFinished) {
                         console.log(`File downloaded to ${destinationPath}`);
                         resolve();
+                    }
+                };
+
+                response.data
+                    .on('end', () => {
+                        streamEnded = true;
+                        checkComplete();
                     })
-                    .on('error', reject)
+                    .on('error', (err) => {
+                        dest.destroy();
+                        reject(err);
+                    })
                     .pipe(dest);
+
+                dest.on('finish', () => {
+                    writeFinished = true;
+                    checkComplete();
+                });
+
+                dest.on('error', (err) => {
+                    response.data.destroy();
+                    reject(err);
+                });
             });
         } catch (error) {
             console.error(`Error downloading file ID '${fileId}':`, error.message);
