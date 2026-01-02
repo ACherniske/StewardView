@@ -4,6 +4,7 @@ import { ArrowLeft, ImageIcon, Film } from 'lucide-react';
 import PlantBackground from '../components/PlantBackground';
 import TimelapseViewer from '../components/TimelapseViewer';
 import PhotoGallery from '../components/PhotoGallery';
+import ImageModal from '../components/ImageModal';
 import '../styles/TrailPage.css';
 
 const TrailPage = () => {
@@ -238,30 +239,13 @@ const TrailPage = () => {
             </div>
 
             {/* Image Modal */}
-            {selectedImage && (
-                <div className="image-modal" onClick={() => setSelectedImage(null)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="modal-close" onClick={() => setSelectedImage(null)}>×</button>
-                        <img 
-                            src={getThumbnailUrl(selectedImage.id, 1200)} 
-                            alt={selectedImage.name}
-                            className="modal-image"
-                        />
-                        <div className="modal-info">
-                            <h3>{formatFileName(selectedImage.name)}</h3>
-                            <p>{formatDate(selectedImage.createdTime)}</p>
-                            <a 
-                                href={selectedImage.webViewLink} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="view-full-link"
-                            >
-                                View in Google Drive
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ImageModal
+                image={selectedImage}
+                onClose={() => setSelectedImage(null)}
+                getThumbnailUrl={getThumbnailUrl}
+                formatFileName={formatFileName}
+                formatDate={formatDate}
+            />
 
             {/* Footer Grass Border */}
             <div className="footer-grass-wide"></div>
