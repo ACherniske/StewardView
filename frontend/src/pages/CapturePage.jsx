@@ -80,7 +80,7 @@ function CapturePage() {
       <div className="trail-capture-container">
         <Link to={`/${orgName}/${trailName}`} className="capture-back-button">
           <ArrowLeft size={20} />
-          Back to Trail
+          Back
         </Link>
         <h1 className="trail-capture-title">{displayTrailName}</h1>
         <p className="organization-name">{displayOrgName}</p>
