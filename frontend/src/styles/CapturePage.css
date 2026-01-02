@@ -134,7 +134,7 @@ body {
     align-items: center;
     width: 100%;
     max-width: 400px;
-    margin-bottom: 2rem;
+    margin-bottom: -1rem;
     padding: 0.35rem;
     gap: 0.35rem;
     background: #f8fdf7;
