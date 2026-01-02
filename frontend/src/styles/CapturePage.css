@@ -65,6 +65,27 @@ body {
     min-height: 600px;
 }
 
+.capture-back-button {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #3a5a40;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    background: #f8fdf7;
+    margin-bottom: 1rem;
+}
+
+.capture-back-button:hover {
+    background: #7bb661;
+    color: white;
+    transform: translateX(-2px);
+}
+
 .trail-capture-title {
     font-size: 2rem;
     color: #3a5a40;
