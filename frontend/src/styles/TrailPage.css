@@ -44,6 +44,8 @@
     position: relative;
     z-index: 2;
     max-width: 1800px;
+    max-height: 85vh;
+    overflow: hidden;
     margin: 0 auto;
     background: #fff;
     border-radius: 20px;
@@ -250,7 +252,7 @@
 
 .timelapse-gif {
     max-width: 100%;
-    max-height: 500px;
+    max-height: 400px;
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(60, 100, 60, 0.15);
 }
@@ -323,14 +325,19 @@
     background: #f8fdf7;
     border-radius: 16px;
     max-height: 70vh;
+    min-height: 400px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .gallery-content {
+    flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 0.5rem;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
 }
 
 .gallery-content::-webkit-scrollbar {
@@ -353,9 +360,10 @@
 
 .photo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 1rem;
     margin-top: 1.5rem;
+    padding-bottom: 18rem;
 }
 
 .photo-item {
@@ -621,9 +629,7 @@
     .footer-grass-thin {
         display: block;
     }
-}
 
-@media (max-width: 900px) {
     .header-actions {
         flex-direction: column;
         gap: 0.75rem;
@@ -678,14 +684,27 @@
         font-size: 1.5rem;
     }
 
-    .timelapse-section,
     .gallery-section {
         padding: 1.5rem;
+        max-height: calc(100vh - 400px);
+        min-height: 450px;
+    }
+
+    .gallery-content {
+        flex: 1 1 auto;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        min-height: 0;
+    }
+
+    .section-header {
+        flex-shrink: 0;
     }
 
     .photo-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.875rem;
+        padding-bottom: 10rem;
     }
 
     .image-modal {
@@ -720,9 +739,16 @@
         font-size: 1.3rem;
     }
 
+    .gallery-section {
+        padding: 1rem;
+        max-height: calc(100vh - 350px);
+        min-height: 400px;
+    }
+
     .photo-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
+        padding-bottom: 1rem;
     }
 
     .modal-content {
