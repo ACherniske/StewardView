@@ -373,6 +373,27 @@ router.post(
 
             console.log(`Timelapse generation successful: ${result.path}`);
 
+            // For single trail, upload the generated GIF to Drive before sending
+            if (trailNames && trailNames.length === 1) {
+                const trailName = trailNames[0];
+                try {
+                    console.log(`Uploading generated timelapse to Drive for trail '${trailName}'`);
+                    
+                    // Delete old GIF if exists
+                    const existingGif = await driveService.getTimelapseGif(orgSlug, trailName);
+                    if (existingGif) {
+                        await driveService.deleteFile(existingGif.id);
+                    }
+                    
+                    // Upload new GIF
+                    await driveService.uploadTimelapseGif(orgSlug, trailName, result.path);
+                    console.log(`Timelapse uploaded to Drive for trail '${trailName}'`);
+                } catch (uploadError) {
+                    console.error(`Failed to upload timelapse to Drive: ${uploadError.message}`);
+                    // Continue to send file even if upload fails
+                }
+            }
+
             res.sendFile(result.path, (err) => {
                 if (err) {
                     console.error('Error sending timelapse file:', err.message);
