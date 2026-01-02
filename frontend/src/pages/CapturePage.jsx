@@ -147,7 +147,7 @@ function CapturePage() {
       {/* Footer Bar */}
       <footer className="footer-bar">
         <div className="footer-content">
-          StewardView &bull; Developed by Aiden Cherniske &bull; 2025 &bull; <span class="no-wrap">For support: <a href="mailto:apcherniske@gmail.com">apcherniske@gmail.com</a></span>
+          StewardView &bull; Developed by Aiden Cherniske &bull; 2025 &bull; <span className="no-wrap">For support: <a href="mailto:apcherniske@gmail.com">apcherniske@gmail.com</a></span>
         </div>
       </footer>
     </div>
