@@ -10,7 +10,6 @@ const PhotoGallery = ({
     return (
         <section className="gallery-section">
             <div className="section-header">
-                <ImageIcon size={24} />
                 <h2>Photo Gallery</h2>
                 <span className="photo-count">({images.length} photos)</span>
             </div>
