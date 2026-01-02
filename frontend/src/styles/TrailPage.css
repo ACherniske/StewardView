@@ -452,102 +452,6 @@
 }
 
 /* ==========================================================================
-   Image Modal
-   ========================================================================== */
-
-.image-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-}
-
-.modal-content {
-    position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-    width: 100%;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 2rem;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 10;
-    transition: background 0.2s;
-}
-
-.modal-close:hover {
-    background: rgba(0, 0, 0, 0.9);
-}
-
-.modal-image {
-    width: 100%;
-    height: calc(90vh - 120px);
-    object-fit: contain;
-    display: block;
-    background: #f5f5f5;
-    flex: 1;
-}
-
-.modal-info {
-    padding: 1.5rem 2rem;
-    background: white;
-    border-top: 1px solid #e0e0e0;
-    flex-shrink: 0;
-}
-
-.modal-info h3 {
-    margin: 0 0 0.5rem 0;
-    color: #3a5a40;
-    font-size: 1.3rem;
-}
-
-.modal-info p {
-    margin: 0 0 1rem 0;
-    color: #5a7a6a;
-    font-size: 0.95rem;
-}
-
-.view-full-link {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: #7bb661;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: background 0.2s;
-}
-
-.view-full-link:hover {
-    background: #6da557;
-}
-
-/* ==========================================================================
    Loading & Error States
    ========================================================================== */
 
@@ -707,14 +611,6 @@
         gap: 0.875rem;
         padding-bottom: 10rem;
     }
-
-    .image-modal {
-        padding: 1rem;
-    }
-
-    .modal-info {
-        padding: 1rem;
-    }
 }
 
 @media (max-width: 480px) {
@@ -750,14 +646,5 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
         padding-bottom: 1rem;
-    }
-
-    .modal-content {
-        max-width: 95vw;
-        max-height: 95vh;
-    }
-
-    .modal-image {
-        height: calc(95vh - 140px);
     }
 }
