@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ImageIcon, Film } from 'lucide-react';
 import PlantBackground from '../components/PlantBackground';
+import TimelapseViewer from '../components/TimelapseViewer';
+import PhotoGallery from '../components/PhotoGallery';
 import '../styles/TrailPage.css';
 
 const TrailPage = () => {
@@ -200,80 +202,22 @@ const TrailPage = () => {
 
                 {/* Timelapse Section */}
                 {activeView === 'timelapse' && (
-                <section className="timelapse-section">
-                    <div className="section-header">
-                        <Film size={24} />
-                        <h2>Trail Timelapse</h2>
-                    </div>
-                    {gifLoading ? (
-                        <div className="gif-loading">
-                            <div className="loading-spinner"></div>
-                            <p>Generating timelapse animation...</p>
-                        </div>
-                    ) : gifUrl ? (
-                        <div className="gif-container">
-                            <img src={gifUrl} alt="Trail Timelapse" className="timelapse-gif" />
-                        </div>
-                    ) : images.length === 0 ? (
-                        <div className="gif-placeholder">
-                            <p className="no-images-msg">No images available to create timelapse</p>
-                        </div>
-                    ) : (
-                        <div className="gif-placeholder">
-                            <p className="no-images-msg">Unable to generate timelapse at this time</p>
-                            <button 
-                                onClick={generateTimelapse} 
-                                className="retry-btn"
-                            >
-                                Retry
-                            </button>
-                        </div>
-                    )}
-                </section>
+                    <TimelapseViewer
+                        gifUrl={gifUrl}
+                        gifLoading={gifLoading}
+                        imagesCount={images.length}
+                        onRetry={generateTimelapse}
+                    />
                 )}
 
                 {/* Photo Gallery Section */}
                 {activeView === 'gallery' && (
-                <section className="gallery-section">
-                    <div className="section-header">
-                        <ImageIcon size={24} />
-                        <h2>Photo Gallery</h2>
-                        <span className="photo-count">({images.length} photos)</span>
-                    </div>
-                    
-                    <div className="gallery-content">
-                        {images.length === 0 ? (
-                            <div className="no-photos">
-                                <ImageIcon size={48} className="empty-icon" />
-                                <p>No photos have been uploaded to this trail yet.</p>
-                                <Link to="/capture" className="capture-link">Capture First Photo</Link>
-                            </div>
-                        ) : (
-                            <div className="photo-grid">
-                                {images.map((image) => (
-                                    <div 
-                                        key={image.id} 
-                                        className="photo-item"
-                                        onClick={() => setSelectedImage(image)}
-                                    >
-                                        <div className="photo-thumbnail">
-                                            <img 
-                                                src={getThumbnailUrl(image.id, 300)} 
-                                                alt={image.name}
-                                                loading="lazy"
-                                            />
-                                            <div className="photo-overlay">
-                                                <span className="photo-date-badge">
-                                                    {formatFileName(image.name)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </section>
+                    <PhotoGallery
+                        images={images}
+                        onImageClick={setSelectedImage}
+                        getThumbnailUrl={getThumbnailUrl}
+                        formatFileName={formatFileName}
+                    />
                 )}
             </div>
 
