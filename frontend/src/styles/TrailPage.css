@@ -7,8 +7,8 @@
     width: 100%;
     background: #e3fadf;
     position: relative;
-    overflow-x: hidden;
-    padding: 2rem 1rem 5rem 1rem;
+    overflow-x: auto;
+    padding: 1rem 2rem 5rem 2rem;
 }
 
 .no-wrap {
@@ -43,13 +43,13 @@
 .trail-container {
     position: relative;
     z-index: 2;
-    max-width: 1800px;
+    min-width: 600px;
     max-height: 85vh;
     overflow: hidden;
     margin: 0 auto;
     background: #fff;
     border-radius: 20px;
-    padding: 2.5rem;
+    padding: 2rem;
     box-sizing: border-box;
     box-shadow: 0 4px 24px 0 rgba(60, 100, 60, 0.1);
 }
@@ -60,9 +60,9 @@
 
 .trail-header {
     text-align: center;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 2rem;
+    padding-bottom: 0;
+    border-bottom: none;
     position: relative;
 }
 
@@ -70,7 +70,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     box-sizing: border-box;
 }
 
@@ -120,7 +120,7 @@
 }
 
 .trail-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: #3a5a40;
     font-weight: 700;
     margin: 0 0 0.5rem 0;
@@ -325,7 +325,7 @@
     padding: 2rem;
     background: #f8fdf7;
     border-radius: 16px;
-    max-height: 70vh;
+    max-height: 80vh;
     min-height: 400px;
     display: flex;
     flex-direction: column;
@@ -336,7 +336,7 @@
     flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 0.5rem;
+    padding-right: 1.5rem;
     min-height: 0;
     -webkit-overflow-scrolling: touch;
 }
@@ -361,7 +361,7 @@
 
 .photo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 1rem;
     margin-top: 1.5rem;
     padding-bottom: 18rem;
@@ -666,6 +666,7 @@
     .trail-container {
         padding: 1.5rem;
         border-radius: 16px;
+        min-width: 400px;
     }
 
     .trail-header {
@@ -703,7 +704,6 @@
     }
 
     .photo-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 0.875rem;
         padding-bottom: 10rem;
     }
