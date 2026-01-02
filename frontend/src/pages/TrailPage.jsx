@@ -47,8 +47,14 @@ const TrailPage = () => {
             console.log('Received data:', data);
             
             // Sort files by creation time (newest first) and filter images
+            // Exclude the stored timelapse GIF file
             const imageFiles = data.files
-                .filter(file => file.mimeType && file.mimeType.startsWith('image/'))
+                .filter(file => {
+                    if (!file.mimeType || !file.mimeType.startsWith('image/')) return false;
+                    // Exclude the cached timelapse GIF
+                    if (file.name === '_timelapse.gif') return false;
+                    return true;
+                })
                 .sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
 
             console.log('Filtered images:', imageFiles.length);
