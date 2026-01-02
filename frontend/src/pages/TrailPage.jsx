@@ -186,10 +186,6 @@ const TrailPage = () => {
             <div className="trail-container">
                 <header className="trail-header">
                     <div className="header-actions">
-                        <Link to={`/${orgName}`} className="back-button">
-                            <ArrowLeft size={20} />
-                            Back
-                        </Link>
                         <Link to={`/capture/${orgName}/${trailName}`} className="capture-button">
                             Capture Photo
                         </Link>

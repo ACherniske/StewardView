@@ -146,7 +146,7 @@ function FileUpload({ orgName, trailName, onUploadStart, onUploadSuccess, onUplo
               style={{ display: 'none' }}
             />
             <div className="upload-requirements">
-              Accepted: JPEG, PNG, WebP &nbsp;|&nbsp; Max: 10MB
+              Accepted: JPEG, PNG &nbsp;|&nbsp; Max: 10MB
             </div>
           </div>
         </>
