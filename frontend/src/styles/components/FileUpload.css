@@ -13,8 +13,8 @@
 }
 
 .file-upload-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #3a5a40;
   margin-bottom: 0.25rem;
   margin-top: -0.25rem;
@@ -73,14 +73,14 @@
 
 .upload-area-main {
   color: #3a5a40;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   margin-bottom: 0.3rem;
 }
 
 .upload-area-or {
   color: #7bb661;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
 }
 
 .choose-file-btn {
@@ -88,8 +88,8 @@
   color: #fff;
   border: none;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
   padding: 0.85rem 2rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -115,7 +115,7 @@
 
 .upload-requirements {
   color: #7bb661;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   margin-top: 0.5rem;
   line-height: 1.6;
 }
@@ -161,16 +161,16 @@
 
 .file-name {
   margin: 0 0 0.5rem 0;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: #3a5a40;
   word-break: break-word;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
 }
 
 .file-size {
   margin: 0;
   color: #4e6e5d;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
 }
 
 /* Preview Controls */
@@ -190,8 +190,8 @@
   max-width: 200px;
   border: none;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
   padding: 0.85rem 1.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -238,11 +238,11 @@
   }
 
   .upload-area-main {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
   }
 
   .choose-file-btn {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     padding: 0.75rem 1.5rem;
   }
 
@@ -251,7 +251,7 @@
   }
 
   .preview-controls .btn {
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
     padding: 0.75rem 1.2rem;
   }
 }
@@ -264,20 +264,20 @@
   }
 
   .upload-area-main {
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
   }
 
   .upload-area-or {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
   }
 
   .choose-file-btn {
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
     padding: 0.7rem 1.25rem;
   }
 
   .upload-requirements {
-    font-size: 0.85rem;
+    font-size: var(--font-size-xs);
   }
 
   .file-preview {
@@ -285,7 +285,7 @@
   }
 
   .preview-controls .btn {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
     padding: 0.7rem 1rem;
     max-width: 150px;
   }

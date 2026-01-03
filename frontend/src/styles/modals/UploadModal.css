@@ -92,7 +92,7 @@
 
 .modal-title {
   margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
+  font-size: var(--font-size-xl);
   color: #2e7d32;
 }
 
@@ -185,8 +185,8 @@
 .retry-text {
   margin: 0;
   color: #757575;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .btn-modal {
@@ -196,8 +196,8 @@
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -224,6 +224,6 @@
   }
 
   .modal-title {
-    font-size: 1.25rem;
+    font-size: var(--font-size-lg);
   }
 }
