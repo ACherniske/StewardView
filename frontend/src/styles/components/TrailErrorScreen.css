@@ -1,0 +1,114 @@
+/* ==========================================================================
+   Trail Error Screen
+   ========================================================================== */
+
+.trail-error-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    min-height: 400px;
+}
+
+.error-icon {
+    color: #d97706;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+
+.error-icon svg {
+    stroke-width: 1.5;
+}
+
+.error-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: #3a5a40;
+    margin: 0 0 1rem 0;
+}
+
+.error-description {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-regular);
+    color: #5a7a6a;
+    margin: 0 0 2rem 0;
+    max-width: 500px;
+    line-height: var(--line-height-relaxed);
+}
+
+.error-action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #7bb661 0%, #6da557 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    transition: all 0.25s ease;
+    box-shadow: 
+        0 3px 10px rgba(123, 182, 97, 0.35),
+        0 1px 3px rgba(123, 182, 97, 0.2);
+}
+
+.error-action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 5px 15px rgba(123, 182, 97, 0.45),
+        0 2px 5px rgba(123, 182, 97, 0.3);
+}
+
+.error-action-button:active {
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   Responsive Styles
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .trail-error-screen {
+        padding: 2rem 1.5rem;
+    }
+
+    .error-icon svg {
+        width: 56px;
+        height: 56px;
+    }
+
+    .error-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .error-description {
+        font-size: var(--font-size-base);
+    }
+}
+
+@media (max-width: 480px) {
+    .trail-error-screen {
+        padding: 1.5rem 1rem;
+    }
+
+    .error-icon svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    .error-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .error-description {
+        font-size: var(--font-size-sm);
+    }
+
+    .error-action-button {
+        padding: 0.65rem 1.25rem;
+        font-size: var(--font-size-sm);
+    }
+}
