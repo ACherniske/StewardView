@@ -14,8 +14,8 @@
 }
 
 .mobile-camera-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #3a5a40;
   margin-top: -0.25rem;
   margin-bottom: 0.25rem;
@@ -60,14 +60,14 @@
 
 .mobile-camera-area-main {
   color: #3a5a40;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   margin-bottom: 0.3rem;
 }
 
 .mobile-camera-area-or {
   color: #7bb661;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
 }
 
 .mobile-camera-choose-btn {
@@ -75,8 +75,8 @@
   color: #fff;
   border: none;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
   padding: 0.85rem 2rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -141,16 +141,16 @@
 
 .mobile-camera-file-name {
   margin: 0 0 0.5rem 0;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: #3a5a40;
   word-break: break-word;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
 }
 
 .mobile-camera-file-size {
   margin: 0;
   color: #4e6e5d;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
 }
 
 /* Preview Controls */
@@ -169,8 +169,8 @@
   max-width: 200px;
   border: none;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
   padding: 0.85rem 1.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -214,11 +214,11 @@
   }
 
   .mobile-camera-area-main {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
   }
 
   .mobile-camera-choose-btn {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     padding: 0.75rem 1.5rem;
   }
 
@@ -227,7 +227,7 @@
   }
 
   .mobile-camera-btn {
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
     padding: 0.75rem 1.2rem;
   }
 }
@@ -238,15 +238,15 @@
   }
 
   .mobile-camera-area-main {
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
   }
 
   .mobile-camera-area-or {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
   }
 
   .mobile-camera-choose-btn {
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
     padding: 0.7rem 1.25rem;
   }
 
@@ -255,7 +255,7 @@
   }
 
   .mobile-camera-btn {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
     padding: 0.7rem 1rem;
     max-width: 150px;
   }

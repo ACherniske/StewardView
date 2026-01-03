@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ImageIcon, Film } from 'lucide-react';
+import { ArrowLeft, ImageIcon, Film, Camera } from 'lucide-react';
 import PlantBackground from '../components/PlantBackground';
 import TimelapseViewer from '../components/TimelapseViewer';
 import PhotoGallery from '../components/PhotoGallery';
@@ -187,7 +187,8 @@ const TrailPage = () => {
                 <header className="trail-header">
                     <div className="header-actions">
                         <Link to={`/capture/${orgName}/${trailName}`} className="capture-button">
-                            Capture Photo
+                            <Camera size={20} />
+                            Capture
                         </Link>
                     </div>
                     <h1 className="trail-title">{formatTrailName(trailName)}</h1>
