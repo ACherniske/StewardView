@@ -38,14 +38,18 @@
   box-sizing: border-box;
 }
 
+html {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   margin: 0;
   padding: 0;
   min-width: 320px;
-  min-height: 100vh;
   font-family: var(--font-family);
 }
 
 #root {
-  min-height: 100vh;
+  width: 100%;
 }
