@@ -5,6 +5,7 @@ import PlantBackground from '../components/PlantBackground';
 import TimelapseViewer from '../components/TimelapseViewer';
 import PhotoGallery from '../components/PhotoGallery';
 import ImageModal from '../components/ImageModal';
+import TrailErrorScreen from '../components/TrailErrorScreen';
 import '../styles/pages/TrailPage.css';
 
 const TrailPage = () => {
@@ -13,6 +14,7 @@ const TrailPage = () => {
     const [gifUrl, setGifUrl] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [errorType, setErrorType] = useState(null);
     const [gifLoading, setGifLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [activeView, setActiveView] = useState('timelapse'); // 'timelapse' or 'gallery'
@@ -31,6 +33,7 @@ const TrailPage = () => {
         try {
             setLoading(true);
             setError(null);
+            setErrorType(null);
 
             console.log('Fetching images for:', orgName, trailName);
             const url = `${API_BASE_URL}/${orgName}/${trailName}`;
@@ -41,7 +44,33 @@ const TrailPage = () => {
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Fetch failed:', response.status, errorText);
-                throw new Error(`Failed to fetch images: ${response.statusText}`);
+                
+                // Try to parse error as JSON
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch {
+                    errorData = { message: errorText };
+                }
+                
+                // Detect error type based on response status and message
+                if (response.status === 404 || response.status === 400) {
+                    const message = errorData.message || errorText;
+                    if (message.includes('organization') || message.includes('Organization')) {
+                        setErrorType('org-not-found');
+                        setError(message);
+                    } else if (message.includes('trail') || message.includes('Trail')) {
+                        setErrorType('trail-not-found');
+                        setError(message);
+                    } else {
+                        setErrorType('server-error');
+                        setError(message);
+                    }
+                } else {
+                    setErrorType('server-error');
+                    setError(errorData.message || `Failed to fetch images: ${response.statusText}`);
+                }
+                return;
             }
 
             const data = await response.json();
@@ -62,6 +91,7 @@ const TrailPage = () => {
             setImages(imageFiles);
         } catch (err) {
             console.error('Error fetching trail images:', err);
+            setErrorType('network-error');
             setError(err.message);
         } finally {
             setLoading(false);
@@ -166,13 +196,13 @@ const TrailPage = () => {
     if (error) {
         return (
             <div className="trail-page">
-                <PlantBackground className="plant-bg-layer" />
                 <div className="trail-container">
-                    <div className="error">Error: {error}</div>
-                    <Link to={`/org/${orgName}`} className="back-button">
-                        <ArrowLeft size={20} />
-                        Back to Organization
-                    </Link>
+                    <TrailErrorScreen 
+                        errorType={errorType}
+                        orgName={orgName}
+                        trailName={trailName}
+                        message={error}
+                    />
                 </div>
             </div>
         );
@@ -231,6 +261,8 @@ const TrailPage = () => {
                         onImageClick={setSelectedImage}
                         getThumbnailUrl={getThumbnailUrl}
                         formatFileName={formatFileName}
+                        orgName={orgName}
+                        trailName={trailName}
                     />
                 )}
             </div>

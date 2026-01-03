@@ -5,7 +5,9 @@ const PhotoGallery = ({
     images, 
     onImageClick, 
     getThumbnailUrl, 
-    formatFileName 
+    formatFileName,
+    orgName,
+    trailName
 }) => {
     return (
         <section className="gallery-section">
@@ -19,7 +21,7 @@ const PhotoGallery = ({
                     <div className="no-photos">
                         <ImageIcon size={48} className="empty-icon" />
                         <p>No photos have been uploaded to this trail yet.</p>
-                        <Link to="/capture" className="capture-link">Capture First Photo</Link>
+                        <Link to={`/capture/${orgName}/${trailName}`} className="capture-link">Capture First Photo</Link>
                     </div>
                 ) : (
                     <div className="photo-grid">
