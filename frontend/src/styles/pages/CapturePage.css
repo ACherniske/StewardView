@@ -2,13 +2,10 @@
    Base Styles
    ========================================================================== */
 
-html,
-body {
-    background: #e3fadf !important;
+.trail-capture-page {
+    background: #e3fadf;
     min-height: 100vh;
     width: 100%;
-    margin: 0;
-    padding: 0;
     overflow-x: hidden;
     overflow-y: hidden;
 }
@@ -27,7 +24,6 @@ body {
     padding: 2rem 1rem 1rem 1rem;
     background: #e3fadf;
     position: relative;
-    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
