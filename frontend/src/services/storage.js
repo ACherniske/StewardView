@@ -47,6 +47,19 @@ class StorageService {
         await this.init();
         if (!this.db) throw new Error('Database not initialized');
 
+        // For iOS Safari compatibility, convert File to ArrayBuffer
+        if (upload.file instanceof File || upload.file instanceof Blob) {
+            const arrayBuffer = await upload.file.arrayBuffer();
+            const fileData = {
+                buffer: arrayBuffer,
+                name: upload.file.name,
+                type: upload.file.type,
+                size: upload.file.size,
+                lastModified: upload.file.lastModified
+            };
+            upload = { ...upload, file: fileData };
+        }
+
         await this.db.add(UPLOAD_STORE, upload);
     }
 
@@ -90,7 +103,10 @@ class StorageService {
         if (!this.db) throw new Error('Database not initialized');
 
         const existing = await this.db.get(UPLOAD_STORE, id);
-        if (!existing) throw new Error(`Upload with id ${id} not found`);
+        if (!existing) {
+            console.warn(`Upload with id ${id} not found - may have been cleaned up`);
+            return; // Silently return instead of throwing
+        }
 
         const updated = { ...existing, ...updates };
         await this.db.put(UPLOAD_STORE, updated);

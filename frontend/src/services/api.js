@@ -50,11 +50,15 @@ export async function uploadPhoto(processedImage, orgName, trailName, onRetry) {
         // Add to queue
         await storageService.addUpload(queuedUpload);
 
-        // Update status to uploading
-        await storageService.updateUpload(uploadId, {
-            status: UploadStatus.UPLOADING,
-            lastAttempt: new Date().toISOString()
-        });
+        // Update status to uploading (wrap in try-catch for iOS)
+        try {
+            await storageService.updateUpload(uploadId, {
+                status: UploadStatus.UPLOADING,
+                lastAttempt: new Date().toISOString()
+            });
+        } catch (updateError) {
+            console.warn('Failed to update upload status, continuing...', updateError);
+        }
 
         // Attempt upload with retry logic
         const result = await retryWithBackoff(
@@ -64,13 +68,17 @@ export async function uploadPhoto(processedImage, orgName, trailName, onRetry) {
                 onRetry: async (attempt, error) => {
                     console.log(`Upload attempt ${attempt} failed:`, error.message);
                     
-                    // Update queue status
-                    await storageService.updateUpload(uploadId, {
-                        status: UploadStatus.RETRYING,
-                        retryCount: attempt,
-                        lastAttempt: new Date().toISOString(),
-                        error: error.message
-                    });
+                    // Update queue status (wrap in try-catch for iOS)
+                    try {
+                        await storageService.updateUpload(uploadId, {
+                            status: UploadStatus.RETRYING,
+                            retryCount: attempt,
+                            lastAttempt: new Date().toISOString(),
+                            error: error.message
+                        });
+                    } catch (updateError) {
+                        console.warn('Failed to update upload retry status', updateError);
+                    }
 
                     // Call UI callback if provided
                     if (onRetry) {
@@ -80,12 +88,16 @@ export async function uploadPhoto(processedImage, orgName, trailName, onRetry) {
             }
         );
 
-        // Success - update queue
-        await storageService.updateUpload(uploadId, {
-            status: UploadStatus.SUCCESS,
-            lastAttempt: new Date().toISOString(),
-            result: result
-        });
+        // Success - update queue (wrap in try-catch for iOS)
+        try {
+            await storageService.updateUpload(uploadId, {
+                status: UploadStatus.SUCCESS,
+                lastAttempt: new Date().toISOString(),
+                result: result
+            });
+        } catch (updateError) {
+            console.warn('Failed to update upload success status', updateError);
+        }
 
         // Clean up successful upload after 1 minute
         setTimeout(() => {
@@ -97,12 +109,16 @@ export async function uploadPhoto(processedImage, orgName, trailName, onRetry) {
     } catch (error) {
         console.error('Upload failed after all retries:', error);
 
-        // Mark as failed in queue
-        await storageService.updateUpload(uploadId, {
-            status: UploadStatus.FAILED,
-            lastAttempt: new Date().toISOString(),
-            error: error.message
-        });
+        // Mark as failed in queue (wrap in try-catch for iOS)
+        try {
+            await storageService.updateUpload(uploadId, {
+                status: UploadStatus.FAILED,
+                lastAttempt: new Date().toISOString(),
+                error: error.message
+            });
+        } catch (updateError) {
+            console.warn('Failed to update upload failed status', updateError);
+        }
 
         throw error;
     }
@@ -211,9 +227,23 @@ export async function retryUpload(uploadId, onRetry) {
             throw new Error('Upload not found in queue');
         }
 
+        // Reconstruct File from stored data if needed (iOS Safari compatibility)
+        let fileToUpload = upload.file;
+        if (upload.file && upload.file.buffer) {
+            // Convert back from ArrayBuffer to File
+            fileToUpload = new File(
+                [upload.file.buffer],
+                upload.file.name,
+                {
+                    type: upload.file.type,
+                    lastModified: upload.file.lastModified
+                }
+            );
+        }
+
         return await uploadPhoto(
             {
-                file: upload.file,
+                file: fileToUpload,
                 filename: upload.filename,
                 metadata: upload.metadata
             },
