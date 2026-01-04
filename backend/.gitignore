@@ -52,3 +52,7 @@ coverage/
 # Production
 dist/
 build/
+.vercel
+.env*.local
+project.json
+README.txt
