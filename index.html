@@ -5,7 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/StewardView/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>stewardview</title>
-    <script type="module" crossorigin src="/StewardView/assets/index-eKZuKTSi.js"></script>
+    <!-- GitHub Pages SPA redirect -->
+    <script type="text/javascript">
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+    <script type="module" crossorigin src="/StewardView/assets/index-BHlWU2LI.js"></script>
     <link rel="stylesheet" crossorigin href="/StewardView/assets/index-BdjmOgQV.css">
   <link rel="manifest" href="/StewardView/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/StewardView/registerSW.js"></script></head>
   <body>
