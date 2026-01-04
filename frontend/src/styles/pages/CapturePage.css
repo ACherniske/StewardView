@@ -21,7 +21,7 @@
 .trail-capture-page {
     min-height: 100vh;
     width: 100%;
-    padding: 2rem 1rem 1rem 1rem;
+    padding: 1.5rem 1rem 4rem 1rem;
     background: #e3fadf;
     position: relative;
     display: flex;
@@ -49,9 +49,8 @@
     z-index: 2;
     max-width: 600px;
     width: 100%;
-    margin: 2.5rem 1.5rem;
-    margin-inline: auto;
-    padding: 2rem;
+    margin: 2.5rem auto;
+    padding: 1.5rem;
     background: #fff;
     border-radius: 20px;
     box-shadow: 0 4px 24px 0 rgba(60, 100, 60, 0.1);
@@ -59,7 +58,7 @@
     flex-direction: column;
     align-items: center;
     box-sizing: border-box;
-    min-height: 600px;
+    min-height: 520px;
 }
 
 .capture-back-button {
@@ -70,7 +69,7 @@
     color: #3a5a40;
     text-decoration: none;
     font-weight: 600;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.25rem;
     border-radius: 8px;
     transition: all 0.2s;
     background: #f8fdf7;
@@ -85,7 +84,7 @@
 }
 
 .trail-capture-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
     color: #3a5a40;
     font-weight: 700;
     margin: 0 0 0.5rem 0;
@@ -94,7 +93,7 @@
 }
 
 .organization-name {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #5a7a6a;
     font-weight: 500;
     margin: 0 0 2rem 0;
@@ -131,6 +130,7 @@
     align-items: center;
     width: 100%;
     max-width: 400px;
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
     padding: 0.35rem;
     gap: 0.35rem;
@@ -274,17 +274,19 @@
 
 /* Mobile (600px and below) */
 @media (max-width: 600px) {
+    .trail-capture-page {
+        padding: 1rem 0.5rem 4rem 0.5rem;
+    }
+
     .trail-capture-container {
-        width: 100%;
-        margin: 1.5rem 1rem;
-        margin-inline: auto;
-        padding: 1.5rem;
+        width: calc(100% - 1rem);
+        margin: 1.5rem auto;
+        padding: 1.25rem;
         border-radius: 16px;
     }
 
     .trail-capture-title {
         font-size: var(--font-size-xl);
-        margin-bottom: 1.5rem;
     }
 
     .capture-card {
@@ -299,25 +301,32 @@
 
 /* Small mobile (400px and below) */
 @media (max-width: 400px) {
+    .trail-capture-page {
+        padding: 0.75rem 0.5rem 4rem 0.5rem;
+    }
+
     .trail-capture-container {
-        min-width: 390px;
-        width: 100%;
-        margin: 1rem;
-        margin-inline: auto;
+        width: calc(100% - 1rem);
+        margin: 1rem auto;
         padding: 1rem;
+        border-radius: 12px;
     }
 
     .trail-capture-title {
-        font-size: var(--font-size-lg);
+        font-size: 1.5rem;
+    }
+
+    .organization-name {
+        font-size: 0.9rem;
     }
 
     .capture-toggle-nav {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
         padding: 0.25rem;
     }
 
     .capture-toggle-nav .toggle-btn {
-        font-size: var(--font-size-sm);
+        font-size: 0.9rem;
         padding: 0.7rem 0.85rem;
     }
 }
