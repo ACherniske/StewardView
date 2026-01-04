@@ -2,14 +2,6 @@
    Base Styles
    ========================================================================== */
 
-.trail-capture-page {
-    background: #e3fadf;
-    min-height: 100vh;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: hidden;
-}
-
 .no-wrap{
     white-space: nowrap;
 }
@@ -21,13 +13,14 @@
 .trail-capture-page {
     min-height: 100vh;
     width: 100%;
-    padding: 1.5rem 1rem 4rem 1rem;
+    padding: 1.5rem 0.75rem 4rem 0.75rem;
     background: #e3fadf;
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow-x: hidden;
 }
 
 .plant-bg-layer {
@@ -49,7 +42,7 @@
     z-index: 2;
     max-width: 600px;
     width: 100%;
-    margin: 2.5rem auto;
+    margin: 0 auto;
     padding: 1.5rem;
     background: #fff;
     border-radius: 20px;
@@ -275,12 +268,11 @@
 /* Mobile (600px and below) */
 @media (max-width: 600px) {
     .trail-capture-page {
-        padding: 1rem 0.5rem 4rem 0.5rem;
+        padding: 1rem 0.75rem 4rem 0.75rem;
     }
 
     .trail-capture-container {
-        width: calc(100% - 1rem);
-        margin: 1.5rem auto;
+        margin: 0 auto;
         padding: 1.25rem;
         border-radius: 16px;
     }
@@ -302,12 +294,11 @@
 /* Small mobile (400px and below) */
 @media (max-width: 400px) {
     .trail-capture-page {
-        padding: 0.75rem 0.5rem 4rem 0.5rem;
+        padding: 0.75rem 0.75rem 4rem 0.75rem;
     }
 
     .trail-capture-container {
-        width: calc(100% - 1rem);
-        margin: 1rem auto;
+        margin: 0 auto;
         padding: 1rem;
         border-radius: 12px;
     }

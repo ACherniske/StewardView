@@ -5,10 +5,14 @@
 .trail-page {
     min-height: 100vh;
     width: 100%;
-    padding: 1.5rem 0.5rem 4rem 0.5rem;
+    padding: 1.5rem 0.75rem 4rem 0.75rem;
     background: #e3fadf;
     position: relative;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .no-wrap {
@@ -50,7 +54,7 @@
     margin: 0 auto;
     background: #fff;
     border-radius: 20px;
-    padding: 1.5rem;
+    padding: 3rem;
     box-sizing: border-box;
     box-shadow: 0 4px 24px 0 rgba(60, 100, 60, 0.1);
 }
@@ -570,31 +574,18 @@
 
 @media (max-width: 768px) {
     .trail-page {
-        padding: 0.75rem 0.5rem 4rem 0.5rem;
+        padding: 0.75rem 0.75rem 4rem 0.75rem;
     }
 
     .trail-container {
-        margin: 1rem auto;
+        margin: 0 auto;
         padding: 1.25rem;
         border-radius: 16px;
-        height: 85vh;
     }
 
     .trail-header {
         margin-bottom: 1rem;
         padding-bottom: 1rem;
-    }
-
-    .trail-title {
-        font-size: var(--font-size-xl);
-    }
-
-    .organization-name {
-        font-size: var(--font-size-base);
-    }
-
-    .section-header h2 {
-        font-size: var(--font-size-xl);
     }
 
     .trail-title {
@@ -634,7 +625,7 @@
 
 @media (max-width: 480px) {
     .trail-page {
-        padding: 0.5rem 0.5rem 4rem 0.5rem;
+        padding: 0.5rem 0.75rem 4rem 0.75rem;
     }
 
     .trail-container {
