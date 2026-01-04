@@ -1,4 +1,8 @@
 require('dotenv').config();
+const path = require('path');
+
+// Use /tmp for serverless environments like Vercel
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 const config = {
     //server
@@ -24,8 +28,8 @@ const config = {
     allowedFileTypes: process.env.ALLOWED_FILE_TYPES
         ? process.env.ALLOWED_FILE_TYPES.split(',')
         : ['image/jpeg', 'image/png', 'image/webp'],
-    uploadDir: process.env.UPLOAD_DIR || 'uploads',
-    tempDir: process.env.TEMP_DIR || 'temp',
+    uploadDir: isServerless ? '/tmp/uploads' : process.env.UPLOAD_DIR || 'uploads',
+    tempDir: isServerless ? '/tmp/temp' : process.env.TEMP_DIR || 'temp',
 
     //timelapse
     timelapseMaxWidth: parseInt(process.env.TIMELAPSE_MAX_WIDTH) || 800, //800px

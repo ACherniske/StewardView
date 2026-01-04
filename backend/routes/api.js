@@ -4,7 +4,15 @@ const multer = require('multer');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const path = require('path');
-const sharp = require('sharp');
+
+// Sharp is optional - used for thumbnails
+let sharp;
+try {
+    sharp = require('sharp');
+} catch (err) {
+    console.warn('Sharp not available - thumbnails will be limited');
+}
+
 const { listActiveOrganizations } = require('../config/organizations');
 const driveService = require('../services/driveService');
 const timelapseService = require('../services/timelapseService');
@@ -26,7 +34,8 @@ const router = express.Router();
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(process.cwd(), config.uploadDir);
+        // Use absolute path from config (already handles serverless vs local)
+        const uploadDir = config.uploadDir;
         if (!fsSync.existsSync(uploadDir)) {
             fsSync.mkdirSync(uploadDir, { recursive: true });
         }
@@ -208,17 +217,26 @@ router.get(
                 return sendError(res, 500, 'Failed to download image from Drive');
             }
 
-            console.log(`[THUMBNAIL] Creating thumbnail with Sharp (size: ${size}px)`);
-            const thumbnail = await sharp(imageBuffer)
-                .resize(size, size, { fit: 'cover' })
-                .jpeg({ quality: 85 })
-                .toBuffer();
+            // If sharp is available, use it for thumbnails
+            if (sharp) {
+                console.log(`[THUMBNAIL] Creating thumbnail with Sharp (size: ${size}px)`);
+                const thumbnail = await sharp(imageBuffer)
+                    .resize(size, size, { fit: 'cover' })
+                    .jpeg({ quality: 85 })
+                    .toBuffer();
 
-            console.log(`[THUMBNAIL] Thumbnail generated: ${thumbnail.length} bytes`);
+                console.log(`[THUMBNAIL] Thumbnail generated: ${thumbnail.length} bytes`);
 
-            res.set('Content-Type', 'image/jpeg');
-            res.set('Cache-Control', 'public, max-age=86400');
-            res.send(thumbnail);
+                res.set('Content-Type', 'image/jpeg');
+                res.set('Cache-Control', 'public, max-age=86400');
+                res.send(thumbnail);
+            } else {
+                // Fallback: return original image if sharp not available
+                console.log(`[THUMBNAIL] Sharp not available, returning original image`);
+                res.set('Content-Type', file.mimeType || 'image/jpeg');
+                res.set('Cache-Control', 'public, max-age=86400');
+                res.send(imageBuffer);
+            }
         } catch (error) {
             console.error('[THUMBNAIL] Error:', error.message);
             sendError(res, 500, 'Thumbnail generation failed', error.message);
@@ -336,7 +354,8 @@ router.post(
                     console.log(`Found cached timelapse GIF for trail '${trailName}', serving from Drive`);
                     
                     // Download the GIF and send it
-                    const tempDir = path.join(process.cwd(), config.tempDir);
+                    // Use absolute path from config (already handles serverless vs local)
+                    const tempDir = config.tempDir;
                     if (!fsSync.existsSync(tempDir)) {
                         fsSync.mkdirSync(tempDir, { recursive: true });
                     }

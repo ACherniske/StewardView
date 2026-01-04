@@ -240,4 +240,11 @@ process.on('unhandledRejection', (reason, promise) => {
 // START THE SERVER
 // ============================================================================
 
-startServer();
+// Only start server if not being imported (i.e., running directly)
+if (require.main === module) {
+    startServer();
+}
+
+// Export for Vercel serverless
+module.exports = app;
+module.exports.app = app;

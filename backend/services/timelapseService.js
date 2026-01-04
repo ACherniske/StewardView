@@ -85,7 +85,8 @@ class TimelapseService {
      * Generate timelapse from trails for a specific organization
      */
     async generateTimeLapse(orgSlug, trailNames) {
-        const tempDir = path.join(process.cwd(), config.tempDir);
+        // Use absolute path from config (already handles serverless vs local)
+        const tempDir = config.tempDir;
         const imageMetadata = []; // Store path with creation time
         let outputPath = null;
 
@@ -168,7 +169,8 @@ class TimelapseService {
      * Returns true if successful, false otherwise
      */
     async regenerateAndStore(orgSlug, trailName) {
-        const tempDir = path.join(process.cwd(), config.tempDir);
+        // Use absolute path from config (already handles serverless vs local)
+        const tempDir = config.tempDir;
         const imageMetadata = [];
         let outputPath = null;
 

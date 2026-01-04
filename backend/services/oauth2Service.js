@@ -12,15 +12,27 @@ class OAuth2Service {
     }
 
     /**
-     * Load OAuth2 credentials
+     * Load OAuth2 credentials from environment or file
      */
     loadCredentials() {
-        if (!fs.existsSync(this.credentialsPath)) {
-            throw new Error(`OAuth2 credentials file not found at ${this.credentialsPath}`);
+        // Try to load from environment variable first (for Vercel/production)
+        if (process.env.OAUTH2_CREDENTIALS) {
+            try {
+                this.credentials = JSON.parse(process.env.OAUTH2_CREDENTIALS);
+                console.log('Loaded OAuth2 credentials from environment variable');
+            } catch (error) {
+                throw new Error('Failed to parse OAUTH2_CREDENTIALS environment variable');
+            }
+        } 
+        // Fall back to file (for local development)
+        else if (fs.existsSync(this.credentialsPath)) {
+            const content = fs.readFileSync(this.credentialsPath, 'utf8');
+            this.credentials = JSON.parse(content);
+            console.log('Loaded OAuth2 credentials from file');
+        } 
+        else {
+            throw new Error(`OAuth2 credentials not found. Set OAUTH2_CREDENTIALS env var or create ${this.credentialsPath}`);
         }
-
-        const content = fs.readFileSync(this.credentialsPath, 'utf8');
-        this.credentials = JSON.parse(content);
         
         const { client_secret, client_id, redirect_uris } = this.credentials.installed || this.credentials.web;
         
@@ -34,13 +46,27 @@ class OAuth2Service {
     }
 
     /**
-     * Get stored token
+     * Get stored token from environment or file
      */
     getStoredToken() {
+        // Try environment variable first (for Vercel/production)
+        if (process.env.OAUTH2_TOKEN) {
+            try {
+                const token = JSON.parse(process.env.OAUTH2_TOKEN);
+                console.log('Loaded OAuth2 token from environment variable');
+                return token;
+            } catch (error) {
+                console.error('Failed to parse OAUTH2_TOKEN environment variable');
+            }
+        }
+        
+        // Fall back to file (for local development)
         if (fs.existsSync(this.tokenPath)) {
             const token = fs.readFileSync(this.tokenPath, 'utf8');
+            console.log('Loaded OAuth2 token from file');
             return JSON.parse(token);
         }
+        
         return null;
     }
 
