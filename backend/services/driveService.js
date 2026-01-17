@@ -335,6 +335,9 @@ class DriveService {
             if (response.data.files.length > 0) {
                 const gifFile = response.data.files[0];
                 console.log(`Found existing timelapse GIF for trail '${trailName}': ${gifFile.id}`);
+                if (response.data.files.length > 1) {
+                    console.warn(`Warning: Found ${response.data.files.length} GIFs for trail '${trailName}', returning first one`);
+                }
                 return gifFile;
             }
 
@@ -342,6 +345,28 @@ class DriveService {
         } catch (error) {
             console.error(`Error checking for timelapse GIF in trail '${trailName}':`, error.message);
             return null;
+        }
+    }
+
+    /**
+     * Get ALL timelapse GIF files for a trail (to handle duplicates)
+     * Returns array of GIF files
+     */
+    async getAllTimelapseGifs(orgSlug, trailName) {
+        try {
+            const trailFolderId = await this.getOrCreateTrailFolder(orgSlug, trailName);
+            const gifName = '_timelapse.gif';
+
+            const response = await this.drive.files.list({
+                q: `name='${gifName}' and '${trailFolderId}' in parents and trashed=false`,
+                fields: 'files(id, name, createdTime, modifiedTime)',
+                spaces: 'drive',
+            });
+
+            return response.data.files || [];
+        } catch (error) {
+            console.error(`Error getting all timelapse GIFs for trail '${trailName}':`, error.message);
+            return [];
         }
     }
 

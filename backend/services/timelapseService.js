@@ -7,6 +7,10 @@ const config = require('../config/config');
 const driveService = require('./driveService');
 
 class TimelapseService {
+    constructor() {
+        // Track ongoing regenerations to prevent race conditions
+        this.regenerationLocks = new Map();
+    }
  
     /**
      * Create timelapse GIF from images with improved error handling
@@ -169,6 +173,17 @@ class TimelapseService {
      * Returns true if successful, false otherwise
      */
     async regenerateAndStore(orgSlug, trailName) {
+        const lockKey = `${orgSlug}:${trailName}`;
+        
+        // Check if already regenerating for this trail
+        if (this.regenerationLocks.get(lockKey)) {
+            console.log(`Timelapse regeneration already in progress for '${trailName}', skipping duplicate request`);
+            return false;
+        }
+
+        // Set lock
+        this.regenerationLocks.set(lockKey, true);
+
         // Use absolute path from config (already handles serverless vs local)
         const tempDir = config.tempDir;
         const imageMetadata = [];
@@ -182,11 +197,20 @@ class TimelapseService {
 
             console.log(`Regenerating timelapse for trail '${trailName}' in organization '${orgSlug}'`);
 
-            // Step 1: Delete the old GIF if it exists
-            const existingGif = await driveService.getTimelapseGif(orgSlug, trailName);
-            if (existingGif) {
-                console.log(`Deleting old timelapse GIF: ${existingGif.id}`);
-                await driveService.deleteFile(existingGif.id);
+            // Step 1: Delete ALL old GIFs if they exist (handle duplicates)
+            const existingGifs = await driveService.getAllTimelapseGifs(orgSlug, trailName);
+            if (existingGifs.length > 0) {
+                console.log(`Deleting ${existingGifs.length} old timelapse GIF(s)`);
+                for (const gif of existingGifs) {
+                    try {
+                        await driveService.deleteFile(gif.id);
+                        console.log(`Deleted GIF: ${gif.id}`);
+                    } catch (err) {
+                        console.error(`Failed to delete GIF ${gif.id}:`, err.message);
+                    }
+                }
+                // Wait a moment for Drive API to propagate deletions
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
             // Step 2: Get all image files from the trail
@@ -250,6 +274,9 @@ class TimelapseService {
             this.cleanup(allImages, outputPath);
             
             return false;
+        } finally {
+            // Release lock
+            this.regenerationLocks.delete(lockKey);
         }
     }
 

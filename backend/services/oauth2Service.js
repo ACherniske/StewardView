@@ -49,24 +49,12 @@ class OAuth2Service {
      * Get stored token from environment or file
      */
     getStoredToken() {
-        // Try environment variable first (for Vercel/production)
-        if (process.env.OAUTH2_TOKEN) {
-            try {
-                const token = JSON.parse(process.env.OAUTH2_TOKEN);
-                console.log('Loaded OAuth2 token from environment variable');
-                return token;
-            } catch (error) {
-                console.error('Failed to parse OAUTH2_TOKEN environment variable');
-            }
-        }
-        
-        // Fall back to file (for local development)
+        // Only use file-based token storage
         if (fs.existsSync(this.tokenPath)) {
             const token = fs.readFileSync(this.tokenPath, 'utf8');
             console.log('Loaded OAuth2 token from file');
             return JSON.parse(token);
         }
-        
         return null;
     }
 
@@ -74,7 +62,19 @@ class OAuth2Service {
      * Save token to file
      */
     saveToken(token) {
-        fs.writeFileSync(this.tokenPath, JSON.stringify(token));
+        let tokenToSave = { ...token };
+        // Preserve existing refresh_token if not present in new token
+        if (!token.refresh_token && fs.existsSync(this.tokenPath)) {
+            try {
+                const existingToken = JSON.parse(fs.readFileSync(this.tokenPath, 'utf8'));
+                if (existingToken.refresh_token) {
+                    tokenToSave.refresh_token = existingToken.refresh_token;
+                }
+            } catch (err) {
+                console.warn('Could not read existing token for refresh_token preservation:', err);
+            }
+        }
+        fs.writeFileSync(this.tokenPath, JSON.stringify(tokenToSave));
         console.log('Token stored to', this.tokenPath);
     }
 
